@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
+<?import javafx.scene.shape.Circle?>
 <BorderPane fx:id="mainContainer" xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.agrotech.controller.DashboardController"
@@ -13,9 +14,28 @@
     <top>
         <VBox fx:id="topPanel" styleClass="top-panel">
             <HBox alignment="CENTER" spacing="20">
-                <Label fx:id="dateLabel" styleClass="info-label"/>
-                <Label fx:id="cropTypeLabel" styleClass="info-label"/>
-                <Label fx:id="systemStatusLabel" styleClass="info-label"/>
+                <VBox alignment="CENTER" styleClass="info-container">
+                    <Label text="Fecha y Hora" styleClass="info-title"/>
+                    <Label fx:id="dateLabel" styleClass="info-label"/>
+                </VBox>
+
+                <VBox alignment="CENTER" styleClass="info-container">
+                    <Label text="Tipo de Cultivo" styleClass="info-title"/>
+                    <ComboBox fx:id="cropTypeCombo" styleClass="crop-combo"/>
+                </VBox>
+
+                <VBox alignment="CENTER" styleClass="info-container">
+                    <Label text="Estado del Sistema" styleClass="info-title"/>
+                    <HBox alignment="CENTER" spacing="10">
+                        <Circle fx:id="statusIndicator" styleClass="status-indicator" radius="6"/>
+                        <Label fx:id="systemStatusLabel" styleClass="info-label"/>
+                    </HBox>
+                </VBox>
+
+                <VBox alignment="CENTER" styleClass="info-container">
+                    <Label text="Última Actualización" styleClass="info-title"/>
+                    <Label fx:id="lastUpdateLabel" styleClass="info-label"/>
+                </VBox>
             </HBox>
         </VBox>
     </top>
