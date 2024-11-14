@@ -1,11 +1,10 @@
 package com.agrotech.controller;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ComboBox;
 import javafx.scene.shape.Circle;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
@@ -24,6 +23,14 @@ public class DashboardController {
     @FXML private Label systemStatusLabel;
     @FXML private Label lastUpdateLabel;
     @FXML private Label cropTypeLabel;
+    @FXML private TextField tempInput;
+    @FXML private ComboBox<String> tempUnitCombo;
+    @FXML private TextField volInput;
+    @FXML private ComboBox<String> volUnitCombo;
+    @FXML private ComboBox<String> containerTypeCombo;
+    @FXML private Spinner<Integer> containerCountSpinner;
+    @FXML private Slider approximateVolSlider;
+    @FXML private Label sliderLabel;
 
     private Timeline clockTimeline;
 
@@ -33,6 +40,7 @@ public class DashboardController {
         setupMainPanel();
         setupBottomPanel();
         setupDateTime();
+        setupCenterPanel();
     }
 
     private void setupTopPanel() {
@@ -40,6 +48,11 @@ public class DashboardController {
         setupCropInfo();
         updateSystemStatus();
         setupLastUpdate();
+    }
+
+    private void setupCenterPanel() {
+        setupTemperatureControls();
+        setupVolumeControls();
     }
 
     private void setupDateTime() {
@@ -94,6 +107,73 @@ public class DashboardController {
         String time = LocalDateTime.now().format(formatter);
         lastUpdateLabel.setText(time);
     }
+
+    private void setupTemperatureControls() {
+        tempUnitCombo.getItems().addAll("°C", "°F");
+        tempUnitCombo.setValue("°C");
+
+        tempInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue.matches("\\d*\\.?\\d*")) {
+                tempInput.setText(oldValue);
+            }
+        });
+    }
+
+    private void setupVolumeControls() {
+        volUnitCombo.getItems().addAll("L", "mL", "m³");
+        volUnitCombo.setValue("L");
+
+        containerTypeCombo.getItems().addAll(
+                "Balde (20L)",
+                "Tanque (200L)",
+                "Bidón (5L)"
+        );
+
+        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100,1);
+        containerCountSpinner.setValueFactory(valueFactory);
+
+        approximateVolSlider.setMin(0);
+        approximateVolSlider.setMax(100);
+        approximateVolSlider.setValue(50);
+
+        approximateVolSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            updateSliderLabel(newValue.doubleValue());
+        });
+
+        updateSliderLabel(50);
+    }
+
+    private void updateSliderLabel(double value) {
+        String description;
+        if(value < 33) {
+            description = "Riego Ligero";
+        } else if(value < 66) {
+            description = "Riego Moderado";
+        } else {
+            description = "Riego Abundante";
+        }
+        sliderLabel.setText(description + String.format(" (%.0f%%)", value));
+    }
+
+    @FXML
+    private void setTempFria() {
+        tempInput.setText("15");
+        tempUnitCombo.setValue("°C");
+    }
+
+    @FXML
+    private void setTempTemplada() {
+        tempInput.setText("20");
+        tempUnitCombo.setValue("°C");
+    }
+
+    @FXML
+    private void setTempCaliente() {
+        tempInput.setText("35");
+        tempUnitCombo.setValue("°C");
+    }
+
+
 
     private void setupMainPanel() {
 
