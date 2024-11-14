@@ -20,4 +20,32 @@ public class DashboardController {
         setupMainPanel();
         setupBottomPanel();
     }
+
+    private void setupTopPanel() {
+        updateDateTime();
+        setupCropInfo();
+        updateSystemStatus();
+    }
+
+    private void updateDateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDate = LocalDateTime.now().format(formatter);
+        dateLabel.setText("Fecha: " + formattedDate);
+    }
+
+    private void setupCropInfo() {
+
+    }
+
+    private void updateSystemStatus() {
+
+    }
+
+    private void setupMainPanel() {
+
+    }
+
+    private void setupBottomPanel() {
+
+    }
 }
