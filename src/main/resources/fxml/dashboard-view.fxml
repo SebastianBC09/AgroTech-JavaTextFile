@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="mainContainer" xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.agrotech.controller.DashboardController"
+            stylesheets="@/css/dashboard-styles.css">
+
+    <!-- Panel Superior -->
+    <top>
+        <VBox fx:id="topPanel" styleClass="top-panel">
+            <HBox alignment="CENTER" spacing="20">
+                <Label fx:id="dateLabel" styleClass="info-label"/>
+                <Label fx:id="cropTypeLabel" styleClass="info-label"/>
+                <Label fx:id="systemStatusLabel" styleClass="info-label"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Panel Central -->
+    <center>
+        <VBox styleClass="center-panel">
+            <!-- Aquí irán los componentes de temperatura y volumen -->
+        </VBox>
+    </center>
+
+    <!-- Panel Inferior -->
+    <bottom>
+        <HBox styleClass="bottom-panel" alignment="CENTER" spacing="20">
+            <!-- Aquí irán los botones de acción -->
+        </HBox>
+    </bottom>
+
+</BorderPane>
