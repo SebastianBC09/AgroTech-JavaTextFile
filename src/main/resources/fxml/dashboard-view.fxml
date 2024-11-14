@@ -42,8 +42,61 @@
 
     <!-- Panel Central -->
     <center>
-        <VBox styleClass="center-panel">
-            <!-- Aquí irán los componentes de temperatura y volumen -->
+        <VBox styleClass="center-panel" spacing="20">
+            <!-- Sección de Temperatura -->
+            <VBox styleClass="data-section">
+                <Label text="Temperatura del Agua" styleClass="section-title"/>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <!-- Entrada Manual -->
+                    <VBox styleClass="input-group">
+                        <Label text="Entrada Manual"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="tempInput" promptText="Temperatura" styleClass="temp-input"/>
+                            <ComboBox fx:id="tempUnitCombo" styleClass="unit-combo"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Selector Predefinido -->
+                    <VBox styleClass="input-group">
+                        <Label text="Selección Rápida"/>
+                        <HBox spacing="10">
+                            <Button text="Fría" onAction="#setTempFria" styleClass="temp-button,temp-fria"/>
+                            <Button text="Templada" onAction="#setTempTemplada" styleClass="temp-button,temp-templada"/>
+                            <Button text="Caliente" onAction="#setTempCaliente" styleClass="temp-button,temp-caliente"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Sección de Volumen -->
+            <VBox styleClass="data-section">
+                <Label text="Volumen de Agua" styleClass="section-title"/>
+
+                <!-- Medidas Estándar -->
+                <VBox styleClass="input-group">
+                    <Label text="Medidas Estándar"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <TextField fx:id="volInput" promptText="Cantidad" styleClass="vol-input"/>
+                        <ComboBox fx:id="volUnitCombo" styleClass="unit-combo"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Medidas Relativas -->
+                <VBox styleClass="input-group">
+                    <Label text="Medidas Relativas"/>
+                    <HBox spacing="10">
+                        <ComboBox fx:id="containerTypeCombo" promptText="Tipo de Contenedor" styleClass="container-combo"/>
+                        <Spinner fx:id="containerCountSpinner" styleClass="count-spinner"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Medidas Abstractas -->
+                <VBox styleClass="input-group">
+                    <Label text="Medida Aproximada"/>
+                    <Slider fx:id="approximateVolSlider" styleClass="vol-slider"/>
+                    <Label fx:id="sliderLabel" styleClass="slider-label"/>
+                </VBox>
+            </VBox>
         </VBox>
     </center>
 
