@@ -11,9 +11,39 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
 }
 
+.info-container {
+    -fx-padding: 10;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5;
+    -fx-min-width: 200;
+}
+
+.info-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+    -fx-font-weight: bold;
+}
+
 .info-label {
     -fx-font-size: 14px;
     -fx-text-fill: #2c3e50;
+}
+
+.crop-combo {
+    -fx-min-width: 150;
+    -fx-background-radius: 3;
+}
+
+.status-indicator {
+    -fx-fill: #28a745; /* Verde para estado activo */
+}
+
+.status-indicator.warning {
+    -fx-fill: #ffc107; /* Amarillo para advertencias */
+}
+
+.status-indicator.error {
+    -fx-fill: #dc3545; /* Rojo para errores */
 }
 
 /* Panel Central */
