@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 public class DashboardController {
     @FXML private BorderPane mainContainer;
@@ -38,8 +39,46 @@ public class DashboardController {
     @FXML private Button sqlButton;
     @FXML private Button nosqlButton;
     @FXML private Button jsonButton;
+    @FXML private ToggleGroup measureType;
+    @FXML private RadioButton containerRadio;
+    @FXML private RadioButton pumpRadio;
+    @FXML private RadioButton hoseRadio;
+    @FXML private RadioButton furrowRadio;
+    @FXML private ComboBox<String> pumpTypeCombo;
+    @FXML private TextField pumpTimeInput;
+    @FXML private ComboBox<String> hoseTypeCombo;
+    @FXML private TextField hoseTimeInput;
+    @FXML private TextField furrowLengthInput;
+    @FXML private TextField furrowWidthInput;
+    @FXML private ComboBox<String> furrowDepthCombo;
+    @FXML private ComboBox<String> comparisonCombo;
+    @FXML private ComboBox<String> comparisonFactorCombo;
 
     private Timeline clockTimeline;
+
+    private static final Map<String, Double> PUMP_FLOW_RATES = Map.of(
+            "Bomba 1HP (3600 L/h)", 3600.0,
+            "Bomba 2HP (7200 L/h)", 7200.0,
+            "Motobomba (10000 L/h)", 10000.0
+    );
+
+    private static final Map<String, Double> HOSE_FLOW_RATES = Map.of(
+            "Manguera 1/2\" (500 L/h)", 500.0,
+            "Manguera 3/4\" (1000 L/h)", 1000.0,
+            "Manguera 1\" (2000 L/h)", 2000.0
+    );
+
+    private static final Map<String, Double> CONTAINER_VOLUMES = Map.of(
+            "Balde (20L)", 20.0,
+            "Tanque (200L)", 200.0,
+            "Bidón (5L)", 5.0
+    );
+
+    private static final Map<String, Double> FURROW_DEPTHS = Map.of(
+            "Bajo (5cm)", 0.05,
+            "Medio (10cm)", 0.10,
+            "Alto (15cm)", 0.15
+    );
 
     @FXML
     public void initialize() {
@@ -94,6 +133,16 @@ public class DashboardController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedDate = LocalDateTime.now().format(formatter);
         dateLabel.setText("Fecha: " + formattedDate);
+    }
+
+    private void setupVolumeControls() {
+        setupBasicMeasures();
+        setupContainerControls();
+        setupFlowBasedControls();
+        setupFurrowControls();
+        setupComparisonControls();
+        setupVolumeSlider();
+        setupVolumeCalculationListeners();
     }
 
     private void setupCropInfo() {
@@ -163,21 +212,314 @@ public class DashboardController {
         } catch (NumberFormatException ignored) {}
     }
 
-    private void setupVolumeControls() {
+    private void setupBasicMeasures() {
+        // Unidades básicas
         volUnitCombo.getItems().addAll("L", "mL", "m³");
         volUnitCombo.setValue("L");
+        volUnitCombo.setOnAction(e -> convertVolume());
 
-        containerTypeCombo.getItems().addAll(
-                "Balde (20L)",
-                "Tanque (200L)",
-                "Bidón (5L)"
-        );
+        // Validación numérica para entrada de volumen
+        volInput.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("\\d*\\.?\\d*")) {
+                volInput.setText(old);
+            }
+        });
+    }
 
+    private void setupContainerControls() {
+        containerTypeCombo.getItems().addAll(CONTAINER_VOLUMES.keySet());
         containerCountSpinner.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1)
         );
+    }
 
-        setupVolumeSlider();
+    private void setupFlowBasedControls() {
+        // Configuración de bombas
+        pumpTypeCombo.getItems().addAll(PUMP_FLOW_RATES.keySet());
+        setupNumericInput(pumpTimeInput);
+
+        // Configuración de mangueras
+        hoseTypeCombo.getItems().addAll(HOSE_FLOW_RATES.keySet());
+        setupNumericInput(hoseTimeInput);
+    }
+
+    private void setupFurrowControls() {
+        furrowDepthCombo.getItems().addAll(FURROW_DEPTHS.keySet());
+        setupNumericInput(furrowLengthInput);
+        setupNumericInput(furrowWidthInput);
+    }
+
+    private void setupComparisonControls() {
+        comparisonCombo.getItems().addAll(
+                "Igual que ayer",
+                "Igual que la semana pasada",
+                "Igual que hace 15 días"
+        );
+
+        comparisonFactorCombo.getItems().addAll(
+                "La mitad",
+                "El doble",
+                "Un tercio",
+                "El triple"
+        );
+
+        // Listener para comparaciones
+        comparisonCombo.setOnAction(e -> updateVolumeFromComparison());
+        comparisonFactorCombo.setOnAction(e -> updateVolumeFromComparison());
+    }
+
+    private void setupNumericInput(TextField input) {
+        input.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("\\d*\\.?\\d*")) {
+                input.setText(old);
+            }
+        });
+    }
+
+    private void setupVolumeCalculationListeners() {
+        measureType.selectedToggleProperty().addListener((obs, old, newVal) -> {
+            if (newVal != null) {
+                updateVolumeInputs((RadioButton) newVal);
+            }
+        });
+
+        // Listeners específicos para cada tipo de medida
+        setupPumpListeners();
+        setupHoseListeners();
+        setupFurrowListeners();
+        setupContainerListeners();
+    }
+
+    private void setupPumpListeners() {
+        pumpRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            pumpTypeCombo.setDisable(!newVal);
+            pumpTimeInput.setDisable(!newVal);
+            if (newVal) calculatePumpVolume();
+        });
+
+        pumpTypeCombo.setOnAction(e -> {
+            if (pumpRadio.isSelected()) calculatePumpVolume();
+        });
+
+        pumpTimeInput.textProperty().addListener((obs, old, newVal) -> {
+            if (pumpRadio.isSelected()) calculatePumpVolume();
+        });
+    }
+
+    private void setupHoseListeners() {
+        hoseRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            hoseTypeCombo.setDisable(!newVal);
+            hoseTimeInput.setDisable(!newVal);
+            if (newVal) calculateHoseVolume();
+        });
+
+        hoseTypeCombo.setOnAction(e -> {
+            if (hoseRadio.isSelected()) calculateHoseVolume();
+        });
+
+        hoseTimeInput.textProperty().addListener((obs, old, newVal) -> {
+            if (hoseRadio.isSelected()) calculateHoseVolume();
+        });
+    }
+
+    private void setupFurrowListeners() {
+        furrowRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            furrowLengthInput.setDisable(!newVal);
+            furrowWidthInput.setDisable(!newVal);
+            furrowDepthCombo.setDisable(!newVal);
+            if (newVal) calculateFurrowVolume();
+        });
+
+        furrowDepthCombo.setOnAction(e -> {
+            if (furrowRadio.isSelected()) calculateFurrowVolume();
+        });
+    }
+
+    private void setupContainerListeners() {
+        containerRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            containerTypeCombo.setDisable(!newVal);
+            containerCountSpinner.setDisable(!newVal);
+            if (newVal) calculateContainerVolume();
+        });
+
+        containerTypeCombo.setOnAction(e -> {
+            if (containerRadio.isSelected()) calculateContainerVolume();
+        });
+
+        containerCountSpinner.valueProperty().addListener((obs, old, newVal) -> {
+            if (containerRadio.isSelected()) calculateContainerVolume();
+        });
+    }
+
+    private void calculatePumpVolume() {
+        try {
+            String pumpType = pumpTypeCombo.getValue();
+            double minutes = Double.parseDouble(pumpTimeInput.getText());
+            double flowRate = PUMP_FLOW_RATES.getOrDefault(pumpType, 0.0);
+            double volume = (flowRate / 60) * minutes;
+            updateVolume(volume, "L");
+        } catch (NumberFormatException ignored) {}
+    }
+
+    private void calculateHoseVolume() {
+        try {
+            String hoseType = hoseTypeCombo.getValue();
+            double minutes = Double.parseDouble(hoseTimeInput.getText());
+            double flowRate = HOSE_FLOW_RATES.getOrDefault(hoseType, 0.0);
+            double volume = (flowRate / 60) * minutes;
+            updateVolume(volume, "L");
+        } catch (NumberFormatException ignored) {}
+    }
+
+    private void calculateFurrowVolume() {
+        try {
+            double length = Double.parseDouble(furrowLengthInput.getText());
+            double width = Double.parseDouble(furrowWidthInput.getText());
+            String depthType = furrowDepthCombo.getValue();
+            double depth = FURROW_DEPTHS.getOrDefault(depthType, 0.0);
+
+            double volumeM3 = length * width * depth;
+            double volumeLiters = volumeM3 * 1000; // Convertir m³ a litros
+            updateVolume(volumeLiters, "L");
+        } catch (NumberFormatException ignored) {}
+    }
+
+    private void calculateContainerVolume() {
+        String containerType = containerTypeCombo.getValue();
+        if (containerType == null) return;
+
+        double baseVolume = CONTAINER_VOLUMES.getOrDefault(containerType, 0.0);
+        double totalVolume = baseVolume * containerCountSpinner.getValue();
+        updateVolume(totalVolume, "L");
+    }
+
+    private void updateVolume(double volume, String unit) {
+        volInput.setText(String.format("%.2f", volume));
+        volUnitCombo.setValue(unit);
+    }
+
+    private void convertVolume() {
+        if (volInput.getText().isEmpty()) return;
+
+        try {
+            double volume = Double.parseDouble(volInput.getText());
+            String targetUnit = volUnitCombo.getValue();
+
+            // Primero convertimos el valor actual a litros (unidad base)
+            double volumeInLiters = switch (targetUnit) {
+                case "mL" -> volume / 1000;    // mL a L
+                case "m³" -> volume * 1000;    // m³ a L (1 m³ = 1000 L)
+                default -> volume;             // ya está en L
+            };
+
+            // Luego convertimos de litros a la unidad seleccionada
+            double convertedVolume = switch (targetUnit) {
+                case "mL" -> volumeInLiters * 1000;  // L a mL
+                case "m³" -> volumeInLiters / 1000;  // L a m³
+                default -> volumeInLiters;           // mantener en L
+            };
+
+            volInput.setText(String.format("%.2f", convertedVolume));
+
+        } catch (NumberFormatException e) {
+            // Si hay error de conversión, mantener el valor anterior
+            volInput.setText("0.00");
+        }
+    }
+
+    private void updateVolumeFromComparison() {
+        String comparisonBase = comparisonCombo.getValue();
+        String factor = comparisonFactorCombo.getValue();
+
+        if (comparisonBase == null || factor == null) return;
+
+        // Aquí normalmente obtendrías el valor histórico de una base de datos
+        // Por ahora usaremos valores de ejemplo
+        double baseVolume = switch (comparisonBase) {
+            case "Igual que ayer" -> 100.0;          // Ejemplo: 100L ayer
+            case "Igual que la semana pasada" -> 90.0;  // Ejemplo: 90L semana pasada
+            case "Igual que hace 15 días" -> 80.0;      // Ejemplo: 80L hace 15 días
+            default -> 0.0;
+        };
+
+        // Aplicar el factor de multiplicación
+        double adjustedVolume = switch (factor) {
+            case "La mitad" -> baseVolume * 0.5;
+            case "El doble" -> baseVolume * 2.0;
+            case "Un tercio" -> baseVolume / 3.0;
+            case "El triple" -> baseVolume * 3.0;
+            default -> baseVolume;
+        };
+
+        // Actualizar el campo de volumen y mostrar un mensaje informativo
+        updateVolume(adjustedVolume, "L");
+
+        // Mostrar mensaje informativo
+        String message = String.format(
+                "Volumen ajustado a %.2f L (%s, %s del registro de %s)",
+                adjustedVolume,
+                factor.toLowerCase(),
+                comparisonBase.toLowerCase()
+        );
+
+        showVolumeUpdateInfo(message);
+    }
+
+    private void showVolumeUpdateInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Actualización de Volumen");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateVolumeInputs(RadioButton selectedButton) {
+        if (selectedButton == null) return;
+
+        // Deshabilitar todos los controles primero
+        disableAllVolumeControls(true);
+
+        // Habilitar solo los controles correspondientes al tipo seleccionado
+        if (selectedButton == containerRadio) {
+            containerTypeCombo.setDisable(false);
+            containerCountSpinner.setDisable(false);
+            calculateContainerVolume();
+        }
+        else if (selectedButton == pumpRadio) {
+            pumpTypeCombo.setDisable(false);
+            pumpTimeInput.setDisable(false);
+            calculatePumpVolume();
+        }
+        else if (selectedButton == hoseRadio) {
+            hoseTypeCombo.setDisable(false);
+            hoseTimeInput.setDisable(false);
+            calculateHoseVolume();
+        }
+        else if (selectedButton == furrowRadio) {
+            furrowLengthInput.setDisable(false);
+            furrowWidthInput.setDisable(false);
+            furrowDepthCombo.setDisable(false);
+            calculateFurrowVolume();
+        }
+    }
+
+    private void disableAllVolumeControls(boolean disable) {
+        // Controles de contenedor
+        containerTypeCombo.setDisable(disable);
+        containerCountSpinner.setDisable(disable);
+
+        // Controles de bomba
+        pumpTypeCombo.setDisable(disable);
+        pumpTimeInput.setDisable(disable);
+
+        // Controles de manguera
+        hoseTypeCombo.setDisable(disable);
+        hoseTimeInput.setDisable(disable);
+
+        // Controles de surco
+        furrowLengthInput.setDisable(disable);
+        furrowWidthInput.setDisable(disable);
+        furrowDepthCombo.setDisable(disable);
     }
 
     private void setupVolumeSlider() {
@@ -211,20 +553,6 @@ public class DashboardController {
         double totalVolume = baseVolume * containerCountSpinner.getValue();
         volInput.setText(String.format("%.2f", totalVolume));
         volUnitCombo.setValue("L");
-    }
-
-    private void convertVolume() {
-        if (volInput.getText().isEmpty()) return;
-        try {
-            double volume = Double.parseDouble(volInput.getText());
-            String unit = volUnitCombo.getValue();
-            double converted = switch (unit) {
-                case "mL" -> volume * 1000;
-                case "m³" -> volume / 1000;
-                default -> volume;
-            };
-            volInput.setText(String.format("%.2f", converted));
-        } catch (NumberFormatException ignored) {}
     }
 
     private void exportToSQL() {
@@ -425,7 +753,6 @@ public class DashboardController {
         alert.setContentText(content);
         alert.showAndWait();
     }
-
 
     public void stop() {
         if(clockTimeline != null) {
