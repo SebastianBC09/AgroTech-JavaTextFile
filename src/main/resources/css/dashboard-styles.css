@@ -116,6 +116,76 @@
 /* Panel Inferior */
 .bottom-panel {
     -fx-background-color: white;
-    -fx-padding: 15;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, -2);
+    -fx-padding: 15 20 20 20;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: #e0e0e0;
+    -fx-alignment: center;
+}
+
+/* Título de la sección de exportación */
+.export-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Información de exportación */
+.export-info {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+    -fx-font-style: italic;
+}
+
+/* Botones de exportación */
+.export-button {
+    -fx-min-width: 120px;
+    -fx-min-height: 35px;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+/* Estilos específicos para cada botón */
+.sql-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.sql-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.nosql-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+}
+
+.nosql-button:hover {
+    -fx-background-color: #27ae60;
+}
+
+.json-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.json-button:hover {
+    -fx-background-color: #c0392b;
+}
+
+/* Efectos hover generales */
+.export-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);
+}
+
+/* Efecto cuando el botón está presionado */
+.export-button:pressed {
+    -fx-translate-y: 1px;
+}
+
+/* Estado deshabilitado */
+.export-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
 }
