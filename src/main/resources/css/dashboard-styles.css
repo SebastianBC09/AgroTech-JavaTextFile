@@ -189,3 +189,81 @@
     -fx-opacity: 0.5;
     -fx-cursor: default;
 }
+
+/* Grupos de medidas */
+.measure-group {
+    -fx-spacing: 10;
+    -fx-padding: 10;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5;
+    -fx-margin: 5 0;
+}
+
+.measure-option {
+    -fx-spacing: 10;
+    -fx-padding: 5;
+    -fx-alignment: center-left;
+}
+
+.measure-combo {
+    -fx-pref-width: 150px;
+}
+
+.numeric-input {
+    -fx-pref-width: 100px;
+    -fx-alignment: center-right;
+}
+
+/* Contenedores de comparación */
+.comparison-container {
+    -fx-spacing: 5;
+    -fx-padding: 5 0;
+}
+
+.comparison-combo, .factor-combo {
+    -fx-pref-width: 180px;
+}
+
+.sublabel {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+    -fx-padding: 5 0;
+}
+
+/* Radio buttons */
+.radio-button {
+    -fx-padding: 5;
+}
+
+.radio-button:selected {
+    -fx-text-fill: #2980b9;
+}
+
+/* Ajustes específicos para medidas */
+.group-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 5 0;
+}
+
+.slider-container {
+    -fx-padding: 10 0;
+}
+
+/* Estilos para campos numéricos en medidas */
+.numeric-input:focused {
+    -fx-background-color: #fff;
+    -fx-border-color: #3498db;
+}
+
+.measure-combo:focused {
+    -fx-background-color: #fff;
+    -fx-border-color: #3498db;
+}
+
+/* Efectos hover para opciones de medida */
+.measure-option:hover {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 5;
+}
