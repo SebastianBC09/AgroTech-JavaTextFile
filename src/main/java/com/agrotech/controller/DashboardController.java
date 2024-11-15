@@ -122,10 +122,6 @@ public class DashboardController {
     private Timeline clockTimeline;
 
     // region Métodos de Inicialización
-    /**
-     * Inicializa todos los componentes del dashboard.
-     * Este método es llamado automáticamente por FXML después de la inyección.
-     */
     @FXML
     public void initialize() {
         setupDateTime();
@@ -134,8 +130,18 @@ public class DashboardController {
         setupMainPanel();
         setupBottomPanel();
 
-        // Deshabilitar controles hasta que se seleccione un método de medición
-        disableAllVolumeControls();
+        // Habilitar controles cuando se seleccione un método de medición
+        measureType.selectedToggleProperty().addListener((obs, old, newVal) -> {
+            if (newVal != null) {
+                updateVolumeInputs((RadioButton) newVal);
+            }
+        });
+
+        // Habilitar los botones de radio por defecto
+        containerRadio.setDisable(false);
+        pumpRadio.setDisable(false);
+        hoseRadio.setDisable(false);
+        furrowRadio.setDisable(false);
     }
 
     /**
@@ -329,14 +335,6 @@ public class DashboardController {
             }
             Double.parseDouble(volInput.getText());
 
-            if (containerTypeCombo.getValue() == null &&
-                    pumpTypeCombo.getValue() == null &&
-                    hoseTypeCombo.getValue() == null &&
-                    furrowDepthCombo.getValue() == null) {
-                showAlert("Error", "Seleccione un método de medición");
-                return false;
-            }
-
         } catch (NumberFormatException e) {
             showAlert("Error", "Los valores numéricos son inválidos");
             return false;
@@ -456,6 +454,7 @@ public class DashboardController {
         // Configurar unidades
         volUnitCombo.getItems().addAll("L", "mL", "m³");
         volUnitCombo.setValue("L");
+        volUnitCombo.setPromptText("L");
         volUnitCombo.setOnAction(e -> convertVolume());
 
         // Validación numérica
@@ -559,13 +558,21 @@ public class DashboardController {
      * Configura los listeners para cálculos automáticos de volumen.
      */
     private void setupVolumeCalculationListeners() {
+        // Listener para cambio de tipo de medida
         measureType.selectedToggleProperty().addListener((obs, old, newVal) -> {
             if (newVal != null) {
                 updateVolumeInputs((RadioButton) newVal);
             }
         });
 
-        setupMeasurementTypeListeners();
+        // Configurar los listeners específicos
+        setupPumpListeners();
+        setupHoseListeners();
+        setupFurrowListeners();
+        setupContainerListeners();
+
+        // Inicialmente, deshabilitar todos los controles de medición
+        disableAllVolumeControls();
     }
 
     /**
@@ -586,27 +593,25 @@ public class DashboardController {
     private void updateVolumeInputs(RadioButton selectedButton) {
         if (selectedButton == null) return;
 
-        // Deshabilitar todos los controles primero
+        // Deshabilitar todos los controles de medición
         disableAllVolumeControls();
 
-        // Habilitar y calcular según el tipo seleccionado
-        switch (selectedButton.getId()) {
-            case "containerRadio" -> {
-                enableContainerControls();
-                calculateContainerVolume();
-            }
-            case "pumpRadio" -> {
-                enablePumpControls();
-                calculatePumpVolume();
-            }
-            case "hoseRadio" -> {
-                enableHoseControls();
-                calculateHoseVolume();
-            }
-            case "furrowRadio" -> {
-                enableFurrowControls();
-                calculateFurrowVolume();
-            }
+        // Habilitar solo los controles correspondientes al tipo seleccionado
+        if (selectedButton == containerRadio) {
+            enableContainerControls();
+            calculateContainerVolume();
+        }
+        else if (selectedButton == pumpRadio) {
+            enablePumpControls();
+            calculatePumpVolume();
+        }
+        else if (selectedButton == hoseRadio) {
+            enableHoseControls();
+            calculateHoseVolume();
+        }
+        else if (selectedButton == furrowRadio) {
+            enableFurrowControls();
+            calculateFurrowVolume();
         }
     }
 
@@ -725,27 +730,49 @@ public class DashboardController {
 
         try {
             double volume = Double.parseDouble(volInput.getText());
-            String currentUnit = volUnitCombo.getValue();
+            String currentUnit = volUnitCombo.getPromptText();
+            String targetUnit = volUnitCombo.getValue();
 
-            // Convertir todo a litros primero
+            if (currentUnit.equals(targetUnit)) return;
+
+            // Primero convertimos todo a litros (unidad base)
             double volumeInLiters = switch (currentUnit) {
-                case "mL" -> volume / 1000;
-                case "m³" -> volume * 1000;
-                default -> volume; // ya está en litros
+                case "mL" -> volume / 1000;     // mL a L
+                case "m³" -> volume * 1000;     // m³ a L (1 m³ = 1000 L)
+                default -> volume;              // ya está en L
             };
 
-            // Convertir a la unidad seleccionada
-            double convertedVolume = switch (currentUnit) {
-                case "mL" -> volumeInLiters * 1000;
-                case "m³" -> volumeInLiters / 1000;
-                default -> volumeInLiters;
+            // Luego convertimos de litros a la unidad seleccionada
+            double convertedVolume = switch (targetUnit) {
+                case "mL" -> volumeInLiters * 1000;  // L a mL
+                case "m³" -> volumeInLiters / 1000;  // L a m³
+                default -> volumeInLiters;           // mantener en L
             };
 
-            volInput.setText(String.format("%.2f", convertedVolume));
+            volInput.setText(String.format("%.3f", convertedVolume));
+            volUnitCombo.setPromptText(targetUnit);
 
-        } catch (NumberFormatException ignored) {
-            volInput.setText("0.00");
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Valor de volumen inválido");
         }
+    }
+
+    private static double getConvertedVolume(String currentUnit, double volume, String targetUnit) {
+        double volumeInLiters = switch (currentUnit) {
+            case "mL" -> volume / 1000;     // mL a L
+            case "m³" -> volume * 1000;     // m³ a L (1 m³ = 1000 L)
+            default -> volume;              // ya está en L
+        };
+
+        // Luego convertimos de litros a la unidad seleccionada
+        // L a mL
+        // L a m³
+        // mantener en L
+        return switch (targetUnit) {
+            case "mL" -> volumeInLiters * 1000;  // L a mL
+            case "m³" -> volumeInLiters / 1000;  // L a m³
+            default -> volumeInLiters;           // mantener en L
+        };
     }
 
     /**
@@ -821,22 +848,18 @@ public class DashboardController {
      */
     private void disableAllVolumeControls() {
         // Controles de contenedor
-        containerRadio.setDisable(true);
         containerTypeCombo.setDisable(true);
         containerCountSpinner.setDisable(true);
 
         // Controles de bomba
-        pumpRadio.setDisable(true);
         pumpTypeCombo.setDisable(true);
         pumpTimeInput.setDisable(true);
 
         // Controles de manguera
-        hoseRadio.setDisable(true);
         hoseTypeCombo.setDisable(true);
         hoseTimeInput.setDisable(true);
 
         // Controles de surco
-        furrowRadio.setDisable(true);
         furrowLengthInput.setDisable(true);
         furrowWidthInput.setDisable(true);
         furrowDepthCombo.setDisable(true);
@@ -858,15 +881,21 @@ public class DashboardController {
      * Configura los listeners para la medición por bomba.
      */
     private void setupPumpListeners() {
-        pumpTypeCombo.setOnAction(e -> {
-            if (pumpRadio.isSelected()) calculatePumpVolume();
+        pumpRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            pumpTypeCombo.setDisable(!newVal);
+            pumpTimeInput.setDisable(!newVal);
+            if (newVal) calculatePumpVolume();
         });
 
         pumpTimeInput.textProperty().addListener((obs, old, newVal) -> {
             if (!newVal.matches("\\d*\\.?\\d*")) {
                 pumpTimeInput.setText(old);
-                return;
+            } else if (pumpRadio.isSelected()) {
+                calculatePumpVolume();
             }
+        });
+
+        pumpTypeCombo.setOnAction(e -> {
             if (pumpRadio.isSelected()) calculatePumpVolume();
         });
     }
@@ -875,15 +904,21 @@ public class DashboardController {
      * Configura los listeners para la medición por manguera.
      */
     private void setupHoseListeners() {
-        hoseTypeCombo.setOnAction(e -> {
-            if (hoseRadio.isSelected()) calculateHoseVolume();
+        hoseRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            hoseTypeCombo.setDisable(!newVal);
+            hoseTimeInput.setDisable(!newVal);
+            if (newVal) calculateHoseVolume();
         });
 
         hoseTimeInput.textProperty().addListener((obs, old, newVal) -> {
             if (!newVal.matches("\\d*\\.?\\d*")) {
                 hoseTimeInput.setText(old);
-                return;
+            } else if (hoseRadio.isSelected()) {
+                calculateHoseVolume();
             }
+        });
+
+        hoseTypeCombo.setOnAction(e -> {
             if (hoseRadio.isSelected()) calculateHoseVolume();
         });
     }
@@ -892,33 +927,45 @@ public class DashboardController {
      * Configura los listeners para la medición por surco.
      */
     private void setupFurrowListeners() {
+        furrowRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            furrowLengthInput.setDisable(!newVal);
+            furrowWidthInput.setDisable(!newVal);
+            furrowDepthCombo.setDisable(!newVal);
+            if (newVal) calculateFurrowVolume();
+        });
+
+        furrowLengthInput.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("\\d*\\.?\\d*")) {
+                furrowLengthInput.setText(old);
+            } else if (furrowRadio.isSelected()) {
+                calculateFurrowVolume();
+            }
+        });
+
+        furrowWidthInput.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("\\d*\\.?\\d*")) {
+                furrowWidthInput.setText(old);
+            } else if (furrowRadio.isSelected()) {
+                calculateFurrowVolume();
+            }
+        });
+
         furrowDepthCombo.setOnAction(e -> {
             if (furrowRadio.isSelected()) calculateFurrowVolume();
         });
 
-        // Listener para largo del surco
-        furrowLengthInput.textProperty().addListener((obs, old, newVal) -> {
-            if (!newVal.matches("\\d*\\.?\\d*")) {
-                furrowLengthInput.setText(old);
-                return;
-            }
-            if (furrowRadio.isSelected()) calculateFurrowVolume();
-        });
-
-        // Listener para ancho del surco
-        furrowWidthInput.textProperty().addListener((obs, old, newVal) -> {
-            if (!newVal.matches("\\d*\\.?\\d*")) {
-                furrowWidthInput.setText(old);
-                return;
-            }
-            if (furrowRadio.isSelected()) calculateFurrowVolume();
-        });
     }
 
     /**
      * Configura los listeners para la medición por contenedor.
      */
     private void setupContainerListeners() {
+        containerRadio.selectedProperty().addListener((obs, old, newVal) -> {
+            containerTypeCombo.setDisable(!newVal);
+            containerCountSpinner.setDisable(!newVal);
+            if (newVal) calculateContainerVolume();
+        });
+
         containerTypeCombo.setOnAction(e -> {
             if (containerRadio.isSelected()) calculateContainerVolume();
         });
