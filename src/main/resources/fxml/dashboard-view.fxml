@@ -74,27 +74,83 @@
 
                 <!-- Medidas Estándar -->
                 <VBox styleClass="input-group">
-                    <Label text="Medidas Estándar"/>
+                    <Label text="Medidas Estándar" styleClass="group-label"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <TextField fx:id="volInput" promptText="Cantidad" styleClass="vol-input"/>
                         <ComboBox fx:id="volUnitCombo" styleClass="unit-combo"/>
                     </HBox>
                 </VBox>
 
-                <!-- Medidas Relativas -->
-                <VBox styleClass="input-group">
-                    <Label text="Medidas Relativas"/>
-                    <HBox spacing="10">
-                        <ComboBox fx:id="containerTypeCombo" promptText="Tipo de Contenedor" styleClass="container-combo"/>
+                <!-- Medidas Relativas/Locales -->
+                <VBox styleClass="measure-group">
+                    <Label text="Medidas Locales" styleClass="group-label"/>
+
+                    <fx:define>
+                        <ToggleGroup fx:id="measureType"/>
+                    </fx:define>
+
+                    <!-- Contenedores -->
+                    <HBox spacing="10" styleClass="measure-option">
+                        <RadioButton fx:id="containerRadio" text="Por Contenedores"
+                                     toggleGroup="$measureType"/>
+                        <ComboBox fx:id="containerTypeCombo" promptText="Tipo"
+                                  styleClass="container-combo"/>
                         <Spinner fx:id="containerCountSpinner" styleClass="count-spinner"/>
+                    </HBox>
+
+                    <!-- Bombas -->
+                    <HBox spacing="10" styleClass="measure-option">
+                        <RadioButton fx:id="pumpRadio" text="Por Bomba"
+                                     toggleGroup="$measureType"/>
+                        <ComboBox fx:id="pumpTypeCombo" promptText="Tipo de Bomba"
+                                  styleClass="measure-combo"/>
+                        <TextField fx:id="pumpTimeInput" promptText="Minutos"
+                                   styleClass="numeric-input"/>
+                    </HBox>
+
+                    <!-- Mangueras -->
+                    <HBox spacing="10" styleClass="measure-option">
+                        <RadioButton fx:id="hoseRadio" text="Por Manguera"
+                                     toggleGroup="$measureType"/>
+                        <ComboBox fx:id="hoseTypeCombo" promptText="Tipo de Manguera"
+                                  styleClass="measure-combo"/>
+                        <TextField fx:id="hoseTimeInput" promptText="Minutos"
+                                   styleClass="numeric-input"/>
+                    </HBox>
+
+                    <!-- Surcos -->
+                    <HBox spacing="10" styleClass="measure-option">
+                        <RadioButton fx:id="furrowRadio" text="Por Surco"
+                                     toggleGroup="$measureType"/>
+                        <TextField fx:id="furrowLengthInput" promptText="Largo (m)"
+                                   styleClass="numeric-input"/>
+                        <TextField fx:id="furrowWidthInput" promptText="Ancho (m)"
+                                   styleClass="numeric-input"/>
+                        <ComboBox fx:id="furrowDepthCombo" promptText="Profundidad"
+                                  styleClass="measure-combo"/>
                     </HBox>
                 </VBox>
 
                 <!-- Medidas Abstractas -->
-                <VBox styleClass="input-group">
-                    <Label text="Medida Aproximada"/>
-                    <Slider fx:id="approximateVolSlider" styleClass="vol-slider"/>
-                    <Label fx:id="sliderLabel" styleClass="slider-label"/>
+                <VBox styleClass="measure-group">
+                    <Label text="Medidas Aproximadas" styleClass="group-label"/>
+
+                    <!-- Nivel de Riego -->
+                    <VBox styleClass="slider-container">
+                        <Slider fx:id="approximateVolSlider" styleClass="vol-slider"/>
+                        <Label fx:id="sliderLabel" styleClass="slider-label"/>
+                    </VBox>
+
+                    <!-- Comparación con Riegos Anteriores -->
+                    <VBox styleClass="comparison-container">
+                        <Label text="Comparación con Riegos Anteriores" styleClass="sublabel"/>
+                        <HBox spacing="10">
+                            <ComboBox fx:id="comparisonCombo" promptText="Seleccione referencia"
+                                      styleClass="comparison-combo"/>
+                            <ComboBox fx:id="comparisonFactorCombo" promptText="Factor"
+                                      styleClass="factor-combo"/>
+                        </HBox>
+                    </VBox>
                 </VBox>
             </VBox>
         </VBox>
