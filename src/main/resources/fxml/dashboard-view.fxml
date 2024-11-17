@@ -3,28 +3,27 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
-
 <?import javafx.scene.shape.Circle?>
+
 <BorderPane fx:id="mainContainer" xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.agrotech.controller.DashboardController"
             stylesheets="@/css/dashboard-styles.css">
 
-    <!-- Panel Superior -->
     <top>
-        <VBox fx:id="topPanel" styleClass="top-panel">
+        <VBox styleClass="top-panel">
             <HBox alignment="CENTER" spacing="20">
-                <VBox alignment="CENTER" styleClass="info-container">
+                <VBox styleClass="info-container">
                     <Label text="Fecha y Hora" styleClass="info-title"/>
                     <Label fx:id="dateLabel" styleClass="info-label"/>
                 </VBox>
 
-                <VBox alignment="CENTER" styleClass="info-container">
+                <VBox styleClass="info-container">
                     <Label text="Tipo de Cultivo" styleClass="info-title"/>
                     <ComboBox fx:id="cropTypeCombo" styleClass="crop-combo"/>
                 </VBox>
 
-                <VBox alignment="CENTER" styleClass="info-container">
+                <VBox styleClass="info-container">
                     <Label text="Estado del Sistema" styleClass="info-title"/>
                     <HBox alignment="CENTER" spacing="10">
                         <Circle fx:id="statusIndicator" styleClass="status-indicator" radius="6"/>
@@ -32,7 +31,7 @@
                     </HBox>
                 </VBox>
 
-                <VBox alignment="CENTER" styleClass="info-container">
+                <VBox styleClass="info-container">
                     <Label text="Última Actualización" styleClass="info-title"/>
                     <Label fx:id="lastUpdateLabel" styleClass="info-label"/>
                 </VBox>
@@ -40,14 +39,12 @@
         </VBox>
     </top>
 
-    <!-- Panel Central -->
     <center>
         <VBox styleClass="center-panel" spacing="20">
             <!-- Sección de Temperatura -->
             <VBox styleClass="data-section">
                 <Label text="Temperatura del Agua" styleClass="section-title"/>
                 <HBox spacing="20" alignment="CENTER_LEFT">
-                    <!-- Entrada Manual -->
                     <VBox styleClass="input-group">
                         <Label text="Entrada Manual"/>
                         <HBox spacing="10" alignment="CENTER_LEFT">
@@ -56,7 +53,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Selector Predefinido -->
                     <VBox styleClass="input-group">
                         <Label text="Selección Rápida"/>
                         <HBox spacing="10">
@@ -71,17 +67,14 @@
             <!-- Sección de Volumen -->
             <VBox styleClass="data-section">
                 <Label text="Volumen de Agua" styleClass="section-title"/>
-
-                <!-- Medidas Estándar -->
                 <VBox styleClass="input-group">
-                    <Label text="Medidas Estándar" styleClass="group-label"/>
+                    <Label text="Medidas Estándar"/>
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <TextField fx:id="volInput" promptText="Cantidad" styleClass="vol-input"/>
                         <ComboBox fx:id="volUnitCombo" styleClass="unit-combo"/>
                     </HBox>
                 </VBox>
 
-                <!-- Medidas Relativas/Locales -->
                 <VBox styleClass="measure-group">
                     <Label text="Medidas Locales" styleClass="group-label"/>
 
@@ -91,85 +84,53 @@
 
                     <!-- Contenedores -->
                     <HBox spacing="10" styleClass="measure-option">
-                        <RadioButton fx:id="containerRadio" text="Por Contenedores"
-                                     toggleGroup="$measureType"/>
-                        <ComboBox fx:id="containerTypeCombo" promptText="Tipo"
-                                  styleClass="container-combo"/>
-                        <Spinner fx:id="containerCountSpinner" styleClass="count-spinner"/>
+                        <RadioButton fx:id="containerRadio" text="Por Contenedores" toggleGroup="$measureType"/>
+                        <ComboBox fx:id="containerTypeCombo" promptText="Tipo"/>
+                        <Spinner fx:id="containerCountSpinner"/>
                     </HBox>
 
                     <!-- Bombas -->
                     <HBox spacing="10" styleClass="measure-option">
-                        <RadioButton fx:id="pumpRadio" text="Por Bomba"
-                                     toggleGroup="$measureType"/>
-                        <ComboBox fx:id="pumpTypeCombo" promptText="Tipo de Bomba"
-                                  styleClass="measure-combo"/>
-                        <TextField fx:id="pumpTimeInput" promptText="Minutos"
-                                   styleClass="numeric-input"/>
+                        <RadioButton fx:id="pumpRadio" text="Por Bomba" toggleGroup="$measureType"/>
+                        <ComboBox fx:id="pumpTypeCombo" promptText="Tipo de Bomba"/>
+                        <TextField fx:id="pumpTimeInput" promptText="Minutos"/>
                     </HBox>
 
                     <!-- Mangueras -->
                     <HBox spacing="10" styleClass="measure-option">
-                        <RadioButton fx:id="hoseRadio" text="Por Manguera"
-                                     toggleGroup="$measureType"/>
-                        <ComboBox fx:id="hoseTypeCombo" promptText="Tipo de Manguera"
-                                  styleClass="measure-combo"/>
-                        <TextField fx:id="hoseTimeInput" promptText="Minutos"
-                                   styleClass="numeric-input"/>
+                        <RadioButton fx:id="hoseRadio" text="Por Manguera" toggleGroup="$measureType"/>
+                        <ComboBox fx:id="hoseTypeCombo" promptText="Tipo de Manguera"/>
+                        <TextField fx:id="hoseTimeInput" promptText="Minutos"/>
                     </HBox>
 
                     <!-- Surcos -->
                     <HBox spacing="10" styleClass="measure-option">
-                        <RadioButton fx:id="furrowRadio" text="Por Surco"
-                                     toggleGroup="$measureType"/>
-                        <TextField fx:id="furrowLengthInput" promptText="Largo (m)"
-                                   styleClass="numeric-input"/>
-                        <TextField fx:id="furrowWidthInput" promptText="Ancho (m)"
-                                   styleClass="numeric-input"/>
-                        <ComboBox fx:id="furrowDepthCombo" promptText="Profundidad"
-                                  styleClass="measure-combo"/>
+                        <RadioButton fx:id="furrowRadio" text="Por Surco" toggleGroup="$measureType"/>
+                        <TextField fx:id="furrowLengthInput" promptText="Largo (m)"/>
+                        <TextField fx:id="furrowWidthInput" promptText="Ancho (m)"/>
+                        <ComboBox fx:id="furrowDepthCombo" promptText="Profundidad"/>
                     </HBox>
                 </VBox>
 
-                <!-- Medidas Abstractas -->
+                <!-- Slider de volumen aproximado -->
                 <VBox styleClass="measure-group">
-                    <Label text="Medidas Aproximadas" styleClass="group-label"/>
-
-                    <!-- Nivel de Riego -->
-                    <VBox styleClass="slider-container">
-                        <Slider fx:id="approximateVolSlider" styleClass="vol-slider"/>
-                        <Label fx:id="sliderLabel" styleClass="slider-label"/>
-                    </VBox>
-
-                    <!-- Comparación con Riegos Anteriores -->
-                    <VBox styleClass="comparison-container">
-                        <Label text="Comparación con Riegos Anteriores" styleClass="sublabel"/>
-                        <HBox spacing="10">
-                            <ComboBox fx:id="comparisonCombo" promptText="Seleccione referencia"
-                                      styleClass="comparison-combo"/>
-                            <ComboBox fx:id="comparisonFactorCombo" promptText="Factor"
-                                      styleClass="factor-combo"/>
-                        </HBox>
-                    </VBox>
+                    <Label text="Nivel Aproximado" styleClass="group-label"/>
+                    <Slider fx:id="approximateVolSlider"/>
+                    <Label fx:id="sliderLabel" styleClass="slider-label"/>
                 </VBox>
             </VBox>
         </VBox>
     </center>
 
-    <!-- Panel Inferior -->
     <bottom>
         <VBox styleClass="bottom-panel" spacing="15">
             <Label text="Exportar Datos" styleClass="export-title"/>
             <HBox alignment="CENTER" spacing="20">
-                <Button fx:id="sqlButton" text="SQL"
-                        styleClass="export-button,sql-button"/>
-                <Button fx:id="nosqlButton" text="NoSQL"
-                        styleClass="export-button,nosql-button"/>
-                <Button fx:id="jsonButton" text="JSON"
-                        styleClass="export-button,json-button"/>
+                <Button fx:id="sqlButton" text="SQL" styleClass="export-button,sql-button"/>
+                <Button fx:id="nosqlButton" text="NoSQL" styleClass="export-button,nosql-button"/>
+                <Button fx:id="jsonButton" text="JSON" styleClass="export-button,json-button"/>
             </HBox>
-            <Label text="Seleccione el formato para exportar los datos"
-                   styleClass="export-info"/>
         </VBox>
     </bottom>
+
 </BorderPane>
