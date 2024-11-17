@@ -60,17 +60,9 @@ public class CSVProcessingService {
         }
 
         try {
-            return new SensorData(
-                    parts[0].trim(),                          // timestamp
-                    Double.parseDouble(parts[1].trim()),      // soil_humidity
-                    Double.parseDouble(parts[2].trim()),      // air_temperature
-                    Double.parseDouble(parts[3].trim()),      // air_humidity
-                    "1".equals(parts[4].trim())              // irrigation_status
-            );
-        } catch (NumberFormatException e) {
-            throw new CSVProcessingException("Error al convertir valores numéricos: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new CSVProcessingException("Error en el formato de los datos: " + e.getMessage());
+            return SensorData.fromCsvLine(line);
+        } catch (Exception e) {
+            throw new CSVProcessingException("Error al parsear línea: " + e.getMessage());
         }
     }
 
