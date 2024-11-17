@@ -1,50 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1"
+<VBox alignment="CENTER" spacing="20.0"
+      xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.agrotech.controller.WelcomeController"
-      styleClass="welcome-container"
-      spacing="20"
-      alignment="CENTER">
+      stylesheets="@/css/welcome-styles.css">     <!-- Vinculación del CSS -->
 
     <padding>
-        <Insets top="30" right="40" bottom="30" left="40"/>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <ImageView fx:id="logoImage"
-               fitWidth="200"
-               fitHeight="100"
-               preserveRatio="true"/>
+    <Label text="Sistema de Gestión de Riego" styleClass="welcome-title"/>
 
-    <Label text="Bienvenido al Sistema de Gestión de Riego"
-           styleClass="welcome-title"/>
+    <VBox fx:id="dropZone" alignment="CENTER" spacing="10.0" styleClass="drop-zone">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
 
-    <Label text="Cargue su archivo de datos en formato CSV para comenzar"
-           styleClass="welcome-subtitle"/>
-
-    <VBox fx:id="dropZone"
-          styleClass="drop-zone"
-          alignment="CENTER"
-          spacing="10">
-
-        <Label fx:id="dropZoneLabel"
-               text="Arrastre su archivo CSV aquí"
-               styleClass="drop-zone-label"/>
-
-        <ProgressBar fx:id="progressBar"
-                     visible="false"
-                     styleClass="progress-bar"/>
-
-        <Label fx:id="statusLabel"
-               styleClass="status-label"/>
+        <Label fx:id="statusLabel" styleClass="status-label"/>
+        <ProgressBar fx:id="progressBar" visible="false" styleClass="progress-bar"/>
     </VBox>
-
-    <Button fx:id="browseButton"
-            text="Seleccionar Archivo"
-            styleClass="browse-button"
-            onAction="#handleBrowseAction"/>
 </VBox>
