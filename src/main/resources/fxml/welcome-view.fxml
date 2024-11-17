@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.agrotech.controller.WelcomeController"
+      styleClass="welcome-container"
+      spacing="20"
+      alignment="CENTER">
+
+    <padding>
+        <Insets top="30" right="40" bottom="30" left="40"/>
+    </padding>
+
+    <ImageView fx:id="logoImage"
+               fitWidth="200"
+               fitHeight="100"
+               preserveRatio="true"/>
+
+    <Label text="Bienvenido al Sistema de Gestión de Riego"
+           styleClass="welcome-title"/>
+
+    <Label text="Cargue su archivo de datos en formato CSV para comenzar"
+           styleClass="welcome-subtitle"/>
+
+    <VBox fx:id="dropZone"
+          styleClass="drop-zone"
+          alignment="CENTER"
+          spacing="10">
+
+        <Label fx:id="dropZoneLabel"
+               text="Arrastre su archivo CSV aquí"
+               styleClass="drop-zone-label"/>
+
+        <ProgressBar fx:id="progressBar"
+                     visible="false"
+                     styleClass="progress-bar"/>
+
+        <Label fx:id="statusLabel"
+               styleClass="status-label"/>
+    </VBox>
+
+    <Button fx:id="browseButton"
+            text="Seleccionar Archivo"
+            styleClass="browse-button"
+            onAction="#handleBrowseAction"/>
+</VBox>
