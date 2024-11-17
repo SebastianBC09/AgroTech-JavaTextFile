@@ -51,7 +51,13 @@ public class MeasurementHandler {
             TextField furrowWidthInput,
             ComboBox<String> furrowDepthCombo
     ) {
+        // Inicializar servicio
         this.measurementService = new MeasurementService();
+
+        // Verificar componentes críticos
+        if (volInput == null || volUnitCombo == null) {
+            throw new IllegalArgumentException("Los componentes de volumen no pueden ser null");
+        }
 
         // Inicializar referencias UI
         this.volInput = volInput;
@@ -372,28 +378,84 @@ public class MeasurementHandler {
     }
 
     public boolean validateCurrentInput() {
-        MeasurementType type = getCurrentMeasurementType();
+        try {
+            MeasurementType type = getCurrentMeasurementType();
+            if (type == null) {
+                showError("Tipo de medición no seleccionado");
+                return false;
+            }
 
-        boolean isValid = switch (type) {
-            case CONTAINER -> isContainerInputValid();
-            case PUMP -> isPumpInputValid();
-            case HOSE -> isHoseInputValid();
-            case FURROW -> isFurrowInputValid();
-            case MANUAL -> !volInput.getText().isEmpty();
-        };
-
-        if (!isValid) {
-            String message = switch (type) {
-                case CONTAINER -> "Por favor, seleccione un tipo de contenedor y cantidad";
-                case PUMP -> "Por favor, seleccione un tipo de bomba y tiempo válido";
-                case HOSE -> "Por favor, seleccione un tipo de manguera y tiempo válido";
-                case FURROW -> "Por favor, ingrese dimensiones válidas para el surco";
-                case MANUAL -> "Por favor, ingrese un volumen válido";
+            return switch (type) {
+                case CONTAINER -> validateContainerInput();
+                case PUMP -> validatePumpInput();
+                case HOSE -> validateHoseInput();
+                case FURROW -> validateFurrowInput();
+                case MANUAL -> validateManualInput();
             };
-            showError(message);
+        } catch (Exception e) {
+            showError("Error al validar los datos: " + e.getMessage());
+            return false;
         }
+    }
 
-        return isValid;
+    private boolean validateContainerInput() {
+        if (containerTypeCombo == null || containerCountSpinner == null) {
+            showError("Componentes de contenedor no inicializados");
+            return false;
+        }
+        if (!isContainerInputValid()) {
+            showError("Por favor, seleccione un tipo de contenedor y cantidad");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validatePumpInput() {
+        if (pumpTypeCombo == null || pumpTimeInput == null) {
+            showError("Componentes de bomba no inicializados");
+            return false;
+        }
+        if (!isPumpInputValid()) {
+            showError("Por favor, seleccione un tipo de bomba y tiempo válido");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateHoseInput() {
+        if (hoseTypeCombo == null || hoseTimeInput == null) {
+            showError("Componentes de manguera no inicializados");
+            return false;
+        }
+        if (!isHoseInputValid()) {
+            showError("Por favor, seleccione un tipo de manguera y tiempo válido");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateFurrowInput() {
+        if (furrowLengthInput == null || furrowWidthInput == null || furrowDepthCombo == null) {
+            showError("Componentes de surco no inicializados");
+            return false;
+        }
+        if (!isFurrowInputValid()) {
+            showError("Por favor, ingrese dimensiones válidas para el surco");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateManualInput() {
+        if (volInput == null) {
+            showError("Campo de volumen no inicializado");
+            return false;
+        }
+        if (volInput.getText().isEmpty()) {
+            showError("Por favor, ingrese un volumen válido");
+            return false;
+        }
+        return true;
     }
 
     private void calculateVolume(MeasurementType type) {
@@ -490,11 +552,16 @@ public class MeasurementHandler {
     }
 
     private MeasurementType getCurrentMeasurementType() {
-        if (containerRadio.isSelected()) return MeasurementType.CONTAINER;
-        if (pumpRadio.isSelected()) return MeasurementType.PUMP;
-        if (hoseRadio.isSelected()) return MeasurementType.HOSE;
-        if (furrowRadio.isSelected()) return MeasurementType.FURROW;
-        return MeasurementType.MANUAL;
+        try {
+            if (containerRadio != null && containerRadio.isSelected()) return MeasurementType.CONTAINER;
+            if (pumpRadio != null && pumpRadio.isSelected()) return MeasurementType.PUMP;
+            if (hoseRadio != null && hoseRadio.isSelected()) return MeasurementType.HOSE;
+            if (furrowRadio != null && furrowRadio.isSelected()) return MeasurementType.FURROW;
+            return MeasurementType.MANUAL;
+        } catch (Exception e) {
+            System.err.println("Error al determinar el tipo de medición: " + e.getMessage());
+            return MeasurementType.MANUAL; // Valor por defecto
+        }
     }
 
 }

@@ -8,6 +8,14 @@ public class ValidationHandler {
 
     public ValidationHandler(TemperatureHandler temperatureHandler,
                              MeasurementHandler measurementHandler) {
+        // Validar que los handlers no sean null
+        if (temperatureHandler == null) {
+            throw new IllegalArgumentException("TemperatureHandler no puede ser null");
+        }
+        if (measurementHandler == null) {
+            throw new IllegalArgumentException("MeasurementHandler no puede ser null");
+        }
+
         this.temperatureHandler = temperatureHandler;
         this.measurementHandler = measurementHandler;
     }
@@ -35,6 +43,9 @@ public class ValidationHandler {
 
     private ValidationResult validateTemperature() {
         try {
+            if (temperatureHandler == null) {
+                return ValidationResult.error("Sistema de temperatura no inicializado");
+            }
             if (!temperatureHandler.validateTemperature()) {
                 return ValidationResult.error("Ingrese una temperatura válida para el agua");
             }
@@ -43,9 +54,11 @@ public class ValidationHandler {
             return ValidationResult.error("Error al validar la temperatura: " + e.getMessage());
         }
     }
-
     private ValidationResult validateMeasurement() {
         try {
+            if (measurementHandler == null) {
+                return ValidationResult.error("Sistema de medición no inicializado");
+            }
             if (!measurementHandler.validateCurrentInput()) {
                 return ValidationResult.error("Los datos de medición son inválidos");
             }

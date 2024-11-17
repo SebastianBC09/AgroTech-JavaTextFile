@@ -96,8 +96,8 @@ public class MeasurementService {
         double result = liters / toUnit.getLiterConversionFactor();
 
         // Debug
-        System.out.println(String.format("Conversión: %.2f %s -> %.2f %s",
-                value, fromUnit.getSymbol(), result, toUnit.getSymbol()));
+        System.out.printf("Conversión: %.2f %s -> %.2f %s%n",
+                value, fromUnit.getSymbol(), result, toUnit.getSymbol());
 
         return result;
     }
