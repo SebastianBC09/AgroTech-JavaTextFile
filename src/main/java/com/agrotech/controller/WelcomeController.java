@@ -1,131 +1,141 @@
 package com.agrotech.controller;
 
-import java.io.File;
+import com.agrotech.exception.CSVProcessingException;
+import com.agrotech.exception.FileValidationException;
+
+import com.agrotech.model.UploadState;
+import com.agrotech.service.CSVProcessingService;
+import com.agrotech.service.FileValidationService;
+
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.input.DragEvent;
+import javafx.scene.control.*;
 import javafx.scene.input.TransferMode;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.application.Platform;
+import java.io.File;
+
 
 public class WelcomeController {
+    @FXML private VBox dropZone;
+    @FXML private Label statusLabel;
+    @FXML private ProgressBar progressBar;
 
-    @FXML
-    private Label statusLabel;
-    @FXML
-    private VBox dropZone;
-    @FXML
-    private ProgressBar progressBar;
+    private final FileValidationService validationService;
+    private final CSVProcessingService processingService;
 
-    public enum uploadState{
-        INITIAL , DRAGGING , PROCESSING , RESULT
+    public WelcomeController() {
+        this.validationService = new FileValidationService();
+        this.processingService = new CSVProcessingService();
     }
 
-    public void initialize(){
-        dropZone.setOnDragOver(this::handleDragOver);
-        dropZone.setOnDragDropped(this::handleDragDropped);
+    @FXML
+    public void initialize() {
+        setupDragAndDrop();
+        updateState(UploadState.INITIAL);
     }
 
-    private void handleDragOver(DragEvent event) {
-        if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
-            System.out.println("ARCHIVO ARASTRADO");
-            event.acceptTransferModes(TransferMode.COPY);
-            updateVisualState(uploadState.DRAGGING);
-        }
-        event.consume();
-    }
-
-    private void handleDragDropped(DragEvent event) {
-        if (event.getGestureSource() != dropZone && event.getDragboard().hasFiles()) {
-            var files = event.getDragboard().getFiles();
-            try {
-                File file = files.get(0);
-                if (isValidFile(file)) {
-                    updateVisualState(uploadState.PROCESSING);
-                    processFile(file);
-                } else {
-                    handleError(new FileProcessingException("ARCHIVO NO VALIDO"));
-                }
-            } catch (FileProcessingException e) {
-                handleError(e);
+    private void setupDragAndDrop() {
+        dropZone.setOnDragOver(event -> {
+            if (event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY);
+                updateState(UploadState.DRAGGING);
             }
-        }
-        event.setDropCompleted(true);
-        event.consume();
+            event.consume();
+        });
+
+        dropZone.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+
+            if (db.hasFiles() && !db.getFiles().isEmpty()) {
+                handleFileSelection(db.getFiles().get(0));
+                success = true;
+            }
+
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        dropZone.setOnDragExited(event -> {
+            updateState(UploadState.INITIAL);
+            event.consume();
+        });
     }
 
-    private boolean isValidFile(File file) throws FileProcessingException {
-        if (!file.exists()) {
-            throw new FileProcessingException("EL ARCHIVO NO EXISTE");
+    private void handleBrowseAction() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Archivo CSV");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Archivos CSV", "*.csv")
+        );
+
+        File selectedFile = fileChooser.showOpenDialog(dropZone.getScene().getWindow());
+        if (selectedFile != null) {
+            handleFileSelection(selectedFile);
         }
-        if (file.length() == 0) {
-            throw new FileProcessingException("EL ARCHIVO ESTA VACIO");
+    }
+
+    private void handleFileSelection(File file) {
+        try {
+            if (!validationService.validateFile(file)) {
+                showError("El archivo no es válido");
+                return;
+            }
+
+            processFile(file);
+
+        } catch (FileValidationException e) {
+            showError(e.getMessage());
         }
-        return file.getName().endsWith(".csv");
     }
 
     private void processFile(File file) {
-        new Thread(() -> {
+        updateState(UploadState.PROCESSING);
+
+        Thread processThread = new Thread(() -> {
             try {
-                for (int i = 0; i <= 100; i++) {
-                    final int progress = i;
-                    Platform.runLater(() -> progressBar.setProgress(progress / 100.0));
-                    Thread.sleep(50);
-                    System.out.println("PROCESANDO: " + progress + "%");
-                }
-                Platform.runLater(() -> showResult(true));
-            } catch (InterruptedException e) {
-                Platform.runLater(() -> handleError(new FileProcessingException("Error durante el procesamiento del archivo")));
+                boolean success = processingService.processCSVFile(file, progress ->
+                        Platform.runLater(() -> progressBar.setProgress(progress))
+                );
+
+                Platform.runLater(() -> {
+                    if (success) {
+                        updateState(UploadState.SUCCESS);
+                    } else {
+                        updateState(UploadState.ERROR);
+                        showError("Error al procesar el archivo");
+                    }
+                });
+
+            } catch (CSVProcessingException e) {
+                Platform.runLater(() -> {
+                    updateState(UploadState.ERROR);
+                    showError(e.getMessage());
+                });
             }
-        }).start();
+        });
+
+        processThread.setDaemon(true);
+        processThread.start();
     }
 
-    private void showResult(boolean success) {
-        if (success) {
-            updateVisualState(uploadState.RESULT);
-            statusLabel.setText("ARCHIVO CARGADO DE FORMA CORECTA");
-        } else {
-            updateVisualState(uploadState.RESULT);
-            statusLabel.setText("ERROR AL PROCESAR EL ARCHIVO");
-        }
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
-    private void handleError(Exception e) {
-        statusLabel.setText(e.getMessage());
-        updateVisualState(uploadState.RESULT);
+    private void updateState(UploadState state) {
+        String style = state.getStyle();
+        String message = state.getMessage();
 
-        System.err.println("Error: " + e.getMessage());
-    }
-
-    private void updateVisualState(uploadState state){
-        switch(state){
-            case INITIAL:
-                dropZone.setStyle("-fx-background-color: lightgray;");
-                statusLabel.setText("ARRASTRAR EL ARCHIVO AQUI");
-                progressBar.setVisible(false);
-                break;
-            case DRAGGING:
-                dropZone.setStyle("-fx-background-color: lightblue;");
-                statusLabel.setText("SOLTAR AQUI");
-                progressBar.setVisible(false);
-                break;
-            case PROCESSING:
-                dropZone.setDisable(true);
-                dropZone.setStyle("-fx-background-color: lightblue;");
-                statusLabel.setText("VALIDANDO...");
-                progressBar.setVisible(true);
-                break;
-
-            case RESULT:
-                dropZone.setStyle("-fx-background-color: green;");
-                progressBar.setVisible(false);
-                break;
-            default:
-                break;
-
-        }
+        dropZone.setStyle(style);
+        statusLabel.setText(message);
+        progressBar.setVisible(state == UploadState.PROCESSING);
+        dropZone.setDisable(state == UploadState.PROCESSING);
     }
 }
 
