@@ -18,11 +18,9 @@ public class TemperatureHandler {
     }
 
     public void setupControls() {
-        // Configuración básica de UI
         tempUnitCombo.getItems().addAll("°C", "°F");
         tempUnitCombo.setValue("°C");
 
-        // Listener para validación
         tempInput.textProperty().addListener((obs, old, newVal) -> {
             if (!newVal.matches("-?\\d*\\.?\\d*")) {
                 tempInput.setText(old);
@@ -31,10 +29,11 @@ public class TemperatureHandler {
             validateTemperatureInput(old, newVal);
         });
 
-        // Listener para conversión
-        tempUnitCombo.setOnAction(e -> convertTemperature());
-
-        // Tooltip
+        tempUnitCombo.valueProperty().addListener((obs, oldUnit, newUnit) -> {
+            if (oldUnit != null && !oldUnit.equals(newUnit) && !tempInput.getText().isEmpty()) {
+                convertTemperature(oldUnit, newUnit);
+            }
+        });
         tempInput.setTooltip(new Tooltip("Rango permitido: 0-50°C / 32-122°F"));
     }
 
@@ -59,18 +58,14 @@ public class TemperatureHandler {
         tempUnitCombo.setValue("°C");
     }
 
-    public void convertTemperature() {
-        if (tempInput.getText().isEmpty()) return;
-
+    private void convertTemperature(String fromUnit, String toUnit) {
         try {
             double temp = Double.parseDouble(tempInput.getText());
-            String fromUnit = tempUnitCombo.getPromptText();
-            String toUnit = tempUnitCombo.getValue();
-
             double converted = temperatureService.convertTemperature(temp, fromUnit, toUnit);
             tempInput.setText(String.format("%.1f", converted));
-            tempUnitCombo.setPromptText(toUnit);
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException e) {
+            System.err.println("Error en conversión: " + e.getMessage());
+        }
     }
 
     public double getCurrentTemperature() {

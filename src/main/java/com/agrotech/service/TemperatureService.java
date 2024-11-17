@@ -7,9 +7,6 @@ public class TemperatureService {
     private static final double MIN_TEMP_FAHRENHEIT = 32.0;
     private static final double MAX_TEMP_FAHRENHEIT = 122.0;
 
-    /**
-     * Validates if a temperature value is within acceptable ranges for the given unit
-     */
     public boolean isValidTemperature(double temperature, String unit) {
         return switch (unit) {
             case "°C" -> temperature >= MIN_TEMP_CELSIUS && temperature <= MAX_TEMP_CELSIUS;
@@ -18,22 +15,16 @@ public class TemperatureService {
         };
     }
 
-    /**
-     * Converts temperature between Celsius and Fahrenheit
-     */
     public double convertTemperature(double value, String fromUnit, String toUnit) {
         if (fromUnit.equals(toUnit)) return value;
 
         return switch (toUnit) {
-            case "°C" -> (value - 32) * 5/9;  // F to C
-            case "°F" -> value * 9/5 + 32;    // C to F
-            default -> throw new IllegalArgumentException("Unsupported temperature unit: " + toUnit);
+            case "°C" -> (value - 32) * 5.0/9.0;  // F to C - Note the 5.0/9.0
+            case "°F" -> (value * 9.0/5.0) + 32;  // C to F - Note the 9.0/5.0
+            default -> throw new IllegalArgumentException("Unidad de temperatura no soportada: " + toUnit);
         };
     }
 
-    /**
-     * Provides predefined temperature settings
-     */
     public double getPresetTemperature(String preset) {
         return switch (preset.toLowerCase()) {
             case "fria" -> 15.0;
