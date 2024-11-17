@@ -75,9 +75,32 @@ public class MeasurementService {
         return new FurrowVolumeCalculator(length, width, depth);
     }
 
-    public double convertVolume(double value, VolumeUnit from, VolumeUnit to) {
-        double liters = from.toLiters(value);
-        return to.fromLiters(liters);
+    public double convertVolume(double value, VolumeUnit fromUnit, VolumeUnit toUnit) {
+        // Validación de entrada
+        if (fromUnit == null || toUnit == null) {
+            throw new IllegalArgumentException("Las unidades no pueden ser null");
+        }
+
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            throw new IllegalArgumentException("Valor no válido para la conversión");
+        }
+
+        // Si las unidades son iguales, no hay necesidad de convertir
+        if (fromUnit == toUnit) {
+            return value;
+        }
+
+        // Convertir a litros primero
+        double liters = value * fromUnit.getLiterConversionFactor();
+
+        // Convertir de litros a la unidad destino
+        double result = liters / toUnit.getLiterConversionFactor();
+
+        // Debug
+        System.out.println(String.format("Conversión: %.2f %s -> %.2f %s",
+                value, fromUnit.getSymbol(), result, toUnit.getSymbol()));
+
+        return result;
     }
 }
 

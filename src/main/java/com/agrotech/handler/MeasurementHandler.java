@@ -5,6 +5,7 @@ import com.agrotech.model.MeasurementType;
 import com.agrotech.model.VolumeCalculator;
 import com.agrotech.model.VolumeUnit;
 import com.agrotech.service.MeasurementService;
+import com.agrotech.util.VolumeValidator;
 import javafx.scene.control.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.function.Consumer;
 
 public class MeasurementHandler {
     private final MeasurementService measurementService;
+    private VolumeUnit currentUnit = VolumeUnit.LITER; // Unidad por defecto
 
     // Controles UI
     private final TextField volInput;
@@ -113,7 +115,13 @@ public class MeasurementHandler {
         setupFurrowListeners();
 
         // Listener para conversión de unidades
-        volUnitCombo.setOnAction(e -> convertVolume());
+        volUnitCombo.setOnAction(e -> {
+            String newUnitSymbol = volUnitCombo.getValue();
+            if (newUnitSymbol != null && !newUnitSymbol.equals(currentUnit.getSymbol())) {
+                convertVolume(currentUnit, VolumeUnit.fromSymbol(newUnitSymbol));
+            }
+        });
+
     }
 
     private void setupContainerListeners() {
@@ -337,9 +345,10 @@ public class MeasurementHandler {
         furrowDepthCombo.setValue(null);
     }
 
-    public void setVolume(double volume, String unit) {
+    public void setVolume(double volume, VolumeUnit unit) {
+        currentUnit = unit;
         volInput.setText(String.format("%.2f", volume));
-        volUnitCombo.setValue(unit);
+        volUnitCombo.setValue(unit.getSymbol());
     }
 
     public String getMeasurementDetailsJson() {
@@ -417,20 +426,50 @@ public class MeasurementHandler {
         volUnitCombo.setValue(unit.getSymbol());
     }
 
-    private void convertVolume() {
+    private void convertVolume(VolumeUnit fromUnit, VolumeUnit toUnit) {
         if (volInput.getText().isEmpty()) return;
 
         try {
-            double value = Double.parseDouble(volInput.getText());
-            VolumeUnit fromUnit = VolumeUnit.fromSymbol(volUnitCombo.getPromptText());
-            VolumeUnit toUnit = VolumeUnit.fromSymbol(volUnitCombo.getValue());
+            double currentValue = Double.parseDouble(volInput.getText());
 
-            double converted = measurementService.convertVolume(value, fromUnit, toUnit);
-            volInput.setText(String.format("%.2f", converted));
-            volUnitCombo.setPromptText(toUnit.getSymbol());
+            // Realizar la conversión
+            double converted = measurementService.convertVolume(currentValue, fromUnit, toUnit);
+
+            // Aquí es donde cambiamos el formato de %.2f a %.3f
+            volInput.setText(String.format("%.3f", converted));
+            currentUnit = toUnit;
+
+            // Debug
+            System.out.println("Conversión: " + currentValue + " " + fromUnit.getSymbol() +
+                    " -> " + converted + " " + toUnit.getSymbol());
+
+            // Notificar el cambio si hay un listener
+            if (onVolumeUpdated != null) {
+                MeasurementData data = new MeasurementData(
+                        getCurrentMeasurementType(),
+                        converted,
+                        toUnit,
+                        buildParameters(getCurrentMeasurementType())
+                );
+                onVolumeUpdated.accept(data);
+            }
         } catch (NumberFormatException e) {
-            // Manejar error de conversión
+            showError("Por favor, ingrese un valor numérico válido");
+        } catch (IllegalArgumentException e) {
+            showError("Error en la conversión: " + e.getMessage());
         }
+    }
+
+    public double getCurrentVolume() {
+        try {
+            return VolumeValidator.validateAndConvertVolume(volInput.getText());
+        } catch (IllegalArgumentException e) {
+            return 0.0;
+        }
+    }
+
+    public VolumeUnit getCurrentUnit() {
+        return currentUnit;
     }
 
     public void setOnVolumeUpdated(Consumer<MeasurementData> callback) {
