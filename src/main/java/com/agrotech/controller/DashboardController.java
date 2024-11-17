@@ -1,6 +1,8 @@
 package com.agrotech.controller;
 
+import com.agrotech.handler.ExportHandler;
 import com.agrotech.handler.TemperatureHandler;
+import com.agrotech.model.ExportData;
 import com.agrotech.service.TemperatureService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -85,7 +87,9 @@ public class DashboardController {
     // Controles de Temperatura
     @FXML private TextField tempInput;
     @FXML private ComboBox<String> tempUnitCombo;
+
     private TemperatureHandler temperatureHandler;
+    private ExportHandler exportHandler;
 
     // Controles de Volumen Básicos
     @FXML private TextField volInput;
@@ -134,6 +138,7 @@ public class DashboardController {
     @FXML
     public void initialize() {
         temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
+        exportHandler = new ExportHandler();
         setupDateTime();
         setupTopPanel();
         setupCenterPanel();
@@ -229,9 +234,39 @@ public class DashboardController {
      * Configura los botones de exportación.
      */
     private void setupExportButtons() {
-        sqlButton.setOnAction(e -> exportToSQL());
-        nosqlButton.setOnAction(e -> exportToNoSQL());
-        jsonButton.setOnAction(e -> exportToJSON());
+        sqlButton.setOnAction(e -> {
+            if (validateExport()) {
+                ExportData data = createExportData();
+                exportHandler.exportToSQL(mainContainer.getScene().getWindow(), data);
+            }
+        });
+
+        nosqlButton.setOnAction(e -> {
+            if (validateExport()) {
+                ExportData data = createExportData();
+                exportHandler.exportToNoSQL(mainContainer.getScene().getWindow(), data);
+            }
+        });
+
+        jsonButton.setOnAction(e -> {
+            if (validateExport()) {
+                ExportData data = createExportData();
+                exportHandler.exportToJSON(mainContainer.getScene().getWindow(), data);
+            }
+        });
+    }
+
+    private ExportData createExportData() {
+        return new ExportData(
+                cropTypeCombo.getValue(),
+                temperatureHandler.getCurrentTemperature(),
+                temperatureHandler.getCurrentUnit(),
+                Double.parseDouble(volInput.getText()),
+                volUnitCombo.getValue(),
+                getMeasurementMethod(),
+                generateMeasurementDetailsJSON(),
+                approximateVolSlider.getValue()
+        );
     }
 
     /**
@@ -330,11 +365,11 @@ public class DashboardController {
         }
 
         try {
-            if (tempInput.getText().isEmpty()) {
+            double temperature = temperatureHandler.getCurrentTemperature();
+            if (temperature == 0.0) {
                 showAlert("Error", "Ingrese la temperatura del agua");
                 return false;
             }
-            Double.parseDouble(tempInput.getText());
 
             if (volInput.getText().isEmpty()) {
                 showAlert("Error", "Ingrese el volumen de agua");
@@ -894,182 +929,8 @@ public class DashboardController {
 
 // endregion
 
-    // region Exportación de Datos
-    /**
-     * Genera y guarda un script SQL con los datos actuales.
-     */
-    private void exportToSQL() {
-        try {
-            StringBuilder sql = generateSQLScript();
-            saveToFile(sql.toString(), "Script SQL", "sql");
-        } catch (Exception e) {
-            showAlert("Error", "Error al generar script SQL: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Genera el script SQL para la creación de tabla e inserción de datos.
-     * @return StringBuilder con el script SQL
-     */
-    private StringBuilder generateSQLScript() {
-        StringBuilder sql = new StringBuilder();
-
-        // Crear tabla
-        sql.append("""
-        CREATE TABLE IF NOT EXISTS agricultural_records (
-            id SERIAL PRIMARY KEY,
-            record_date TIMESTAMP,
-            crop_type VARCHAR(50),
-            sensor_data JSONB,
-            water_temperature DECIMAL(5,2),
-            water_temperature_unit VARCHAR(2),
-            water_volume DECIMAL(10,2),
-            water_volume_unit VARCHAR(5),
-            measurement_method VARCHAR(50),
-            measurement_details JSONB,
-            irrigation_level INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );""");
-
-        // Insertar datos actuales
-        sql.append("""
-            INSERT INTO agricultural_records (
-                record_date, crop_type, sensor_data,
-                water_temperature, water_temperature_unit,
-                water_volume, water_volume_unit,
-                measurement_method, measurement_details,
-                irrigation_level
-            ) VALUES (
-            """);
-
-        // Datos principales
-        sql.append(String.format("    TIMESTAMP '%s',\n",
-                        LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
-                .append(String.format("    '%s',\n", cropTypeCombo.getValue()))
-                .append("    '{")
-                .append("\"soil_humidity\": 0.00,")
-                .append("\"air_temperature\": 0.00,")
-                .append("\"air_humidity\": 0.00")
-                .append("}',\n")
-                .append(String.format("    %.2f,\n", Double.parseDouble(tempInput.getText())))
-                .append(String.format("    '%s',\n", tempUnitCombo.getValue()))
-                .append(String.format("    %.2f,\n", Double.parseDouble(volInput.getText())))
-                .append(String.format("    '%s',\n", volUnitCombo.getValue()))
-                .append(String.format("    '%s',\n", getMeasurementMethod()))
-                .append("    ").append(generateMeasurementDetailsJSON()).append(",\n")
-                .append(String.format("    %.0f\n", approximateVolSlider.getValue()))
-                .append(");");
-
-        return sql;
-    }
-
-    /**
-     * Genera y guarda un script NoSQL (MongoDB) con los datos actuales.
-     */
-    private void exportToNoSQL() {
-        try {
-            StringBuilder nosql = generateNoSQLScript();
-            saveToFile(nosql.toString(), "Script MongoDB", "js");
-        } catch (Exception e) {
-            showAlert("Error", "Error al generar script NoSQL: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Genera el script NoSQL para MongoDB.
-     * @return StringBuilder con el script NoSQL
-     */
-    private StringBuilder generateNoSQLScript() {
-        StringBuilder nosql = new StringBuilder();
-
-        nosql.append("db.agricultural_records.insertOne({\n")
-                .append(String.format("    timestamp: ISODate(\"%s\"),\n",
-                        LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
-                .append(String.format("    crop_type: \"%s\",\n", cropTypeCombo.getValue()))
-                .append("    sensor_data: {\n")
-                .append("        soil_humidity: 0.00,\n")
-                .append("        air_temperature: 0.00,\n")
-                .append("        air_humidity: 0.00\n")
-                .append("    },\n")
-                .append("    water_data: {\n")
-                .append(String.format("        temperature: %.2f,\n",
-                        Double.parseDouble(tempInput.getText())))
-                .append(String.format("        temperature_unit: \"%s\",\n",
-                        tempUnitCombo.getValue()))
-                .append(String.format("        volume: %.2f,\n",
-                        Double.parseDouble(volInput.getText())))
-                .append(String.format("        volume_unit: \"%s\"\n",
-                        volUnitCombo.getValue()))
-                .append("    },\n")
-                .append("    measurement: {\n")
-                .append(String.format("        method: \"%s\",\n", getMeasurementMethod()))
-                .append("        details: ").append(generateMeasurementDetailsJSON()).append("\n")
-                .append("    },\n")
-                .append(String.format("    irrigation_level: %.0f,\n",
-                        approximateVolSlider.getValue()))
-                .append("    created_at: new Date()\n")
-                .append("});");
-
-        return nosql;
-    }
-
-    /**
-     * Genera y guarda un archivo JSON con los datos actuales.
-     */
-    private void exportToJSON() {
-        try {
-            StringBuilder json = generateJSONData();
-            saveToFile(json.toString(), "Datos JSON", "json");
-        } catch (Exception e) {
-            showAlert("Error", "Error al generar JSON: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Genera la estructura JSON de los datos.
-     * @return StringBuilder con el JSON
-     */
-    private StringBuilder generateJSONData() {
-        StringBuilder json = new StringBuilder();
-
-        json.append("{\n")
-                .append("    \"agricultural_record\": {\n")
-                .append(String.format("        \"timestamp\": \"%s\",\n",
-                        LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
-                .append(String.format("        \"crop_type\": \"%s\",\n",
-                        cropTypeCombo.getValue()))
-                .append("        \"sensor_data\": {\n")
-                .append("            \"soil_humidity\": 0.00,\n")
-                .append("            \"air_temperature\": 0.00,\n")
-                .append("            \"air_humidity\": 0.00\n")
-                .append("        },\n")
-                .append("        \"water_data\": {\n")
-                .append(String.format("            \"temperature\": %.2f,\n",
-                        Double.parseDouble(tempInput.getText())))
-                .append(String.format("            \"temperature_unit\": \"%s\",\n",
-                        tempUnitCombo.getValue()))
-                .append(String.format("            \"volume\": %.2f,\n",
-                        Double.parseDouble(volInput.getText())))
-                .append(String.format("            \"volume_unit\": \"%s\"\n",
-                        volUnitCombo.getValue()))
-                .append("        },\n")
-                .append("        \"measurement\": {\n")
-                .append(String.format("            \"method\": \"%s\",\n",
-                        getMeasurementMethod()))
-                .append("            \"details\": ").append(generateMeasurementDetailsJSON())
-                .append("\n        },\n")
-                .append(String.format("        \"irrigation_level\": %.0f\n",
-                        approximateVolSlider.getValue()))
-                .append("    }\n")
-                .append("}");
-
-        return json;
-    }
-
-    /**
-     * Obtiene el método de medición actualmente seleccionado.
-     * @return String con el método de medición
-     */
+// region Exportación de Datos
+    //TODO: Este método debería moverse a un futuro VolumeHandler/MeasurementHandler
     private String getMeasurementMethod() {
         if (containerRadio.isSelected()) return "container";
         if (pumpRadio.isSelected()) return "pump";
@@ -1078,10 +939,6 @@ public class DashboardController {
         return "manual";
     }
 
-    /**
-     * Genera el JSON con los detalles específicos del método de medición.
-     * @return String con el JSON de detalles
-     */
     private String generateMeasurementDetailsJSON() {
         StringBuilder details = new StringBuilder("{");
 
@@ -1116,32 +973,6 @@ public class DashboardController {
         return details.toString();
     }
 
-    /**
-     * Guarda el contenido en un archivo.
-     * @param content Contenido a guardar
-     * @param description Descripción del tipo de archivo
-     * @param extension Extensión del archivo
-     */
-    private void saveToFile(String content, String description, String extension) {
-        if (!validateExport()) return;
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar " + description);
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(description, "*." + extension)
-        );
-
-        File file = fileChooser.showSaveDialog(mainContainer.getScene().getWindow());
-        if (file != null) {
-            try {
-                Files.writeString(file.toPath(), content);
-                showAlert("Éxito", "Archivo generado correctamente en:\n" +
-                        file.getAbsolutePath());
-            } catch (IOException e) {
-                showAlert("Error", "Error al guardar el archivo: " + e.getMessage());
-            }
-        }
-    }
 // endregion
 
 // region Acciones de UI
