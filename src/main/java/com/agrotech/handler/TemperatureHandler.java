@@ -1,31 +1,56 @@
 package com.agrotech.handler;
 
-import com.agrotech.service.TemperatureService;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 
 public class TemperatureHandler {
-    private final TemperatureService temperatureService;
     private final TextField tempInput;
     private final ComboBox<String> tempUnitCombo;
 
+    // Constantes para temperaturas predefinidas
+    private static final double TEMP_FRIA = 15.0;
+    private static final double TEMP_TEMPLADA = 20.0;
+    private static final double TEMP_CALIENTE = 25.0;
+
     public TemperatureHandler(TextField tempInput, ComboBox<String> tempUnitCombo) {
-        this.temperatureService = new TemperatureService();
         this.tempInput = tempInput;
         this.tempUnitCombo = tempUnitCombo;
-        setupControls();
+        initializeControls();
+    }
+
+    private void initializeControls() {
+        tempUnitCombo.getItems().addAll("°C", "°F");
+        tempUnitCombo.setValue("°C");
+        setupNumericValidation();
+    }
+
+    private void setupNumericValidation() {
+        tempInput.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("-?\\d*\\.?\\d*")) {
+                tempInput.setText(old);
+            }
+        });
     }
 
     public void setPresetTemperature(String preset) {
-        double temp = temperatureService.getPresetTemperature(preset);
-        tempInput.setText(String.valueOf(temp));
+        double temperature = switch (preset.toLowerCase()) {
+            case "fria" -> TEMP_FRIA;
+            case "templada" -> TEMP_TEMPLADA;
+            case "caliente" -> TEMP_CALIENTE;
+            default -> throw new IllegalArgumentException("Preset de temperatura no válido");
+        };
+
+        tempInput.setText(String.format("%.1f", temperature));
         tempUnitCombo.setValue("°C");
     }
 
     public double getCurrentTemperature() {
         try {
-            return Double.parseDouble(tempInput.getText());
+            double temp = Double.parseDouble(tempInput.getText());
+            if ("°F".equals(tempUnitCombo.getValue())) {
+                return (temp - 32) * 5/9; // Convertir a Celsius
+            }
+            return temp;
         } catch (NumberFormatException e) {
             return 0.0;
         }
@@ -35,60 +60,23 @@ public class TemperatureHandler {
         return tempUnitCombo.getValue();
     }
 
-    public void setupControls() {
-        tempUnitCombo.getItems().addAll("°C", "°F");
-        tempUnitCombo.setValue("°C");
-
-        setupValidation();
-        setupConversion();
-        setupTooltips();
-    }
-
-    private void setupValidation() {
-        tempInput.textProperty().addListener((obs, old, newVal) -> {
-            if (!newVal.matches("-?\\d*\\.?\\d*")) {
-                tempInput.setText(old);
-                return;
-            }
-            validateTemperatureInput(old, newVal);
-        });
-    }
-
-    private void setupConversion() {
-        tempUnitCombo.setOnAction(e -> convertTemperature());
-    }
-
-    private void setupTooltips() {
-        tempInput.setTooltip(new Tooltip("Temperatura del agua utilizada"));
-        tempUnitCombo.setTooltip(new Tooltip("Unidad de temperatura"));
-    }
-
-    private void validateTemperatureInput(String oldValue, String newValue) {
-        try {
-            if (!newValue.isEmpty()) {
-                double temp = Double.parseDouble(newValue);
-                String unit = tempUnitCombo.getValue();
-
-                if (!temperatureService.isValidTemperature(temp, unit)) {
-                    tempInput.setText(oldValue);
-                }
-            }
-        } catch (NumberFormatException e) {
-            tempInput.setText(oldValue);
+    public boolean validateTemperature() {
+        if (tempInput.getText() == null || tempInput.getText().isEmpty()) {
+            return false;
         }
-    }
-
-    public void convertTemperature() {
-        if (tempInput.getText().isEmpty()) return;
 
         try {
             double temp = Double.parseDouble(tempInput.getText());
-            String fromUnit = tempUnitCombo.getPromptText();
-            String toUnit = tempUnitCombo.getValue();
+            String unit = tempUnitCombo.getValue();
 
-            double converted = temperatureService.convertTemperature(temp, fromUnit, toUnit);
-            tempInput.setText(String.format("%.1f", converted));
-            tempUnitCombo.setPromptText(toUnit);
-        } catch (NumberFormatException ignored) {}
+            // Rangos válidos de temperatura
+            if ("°C".equals(unit)) {
+                return temp >= 0 && temp <= 40;  // Rango razonable en Celsius
+            } else {
+                return temp >= 32 && temp <= 104; // Rango equivalente en Fahrenheit
+            }
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
