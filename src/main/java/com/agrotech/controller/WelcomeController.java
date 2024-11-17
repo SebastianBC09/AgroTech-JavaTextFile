@@ -5,14 +5,18 @@ import com.agrotech.exception.FileValidationException;
 
 import com.agrotech.model.UploadState;
 import com.agrotech.service.CSVProcessingService;
+import com.agrotech.service.DataTransformationService;
 import com.agrotech.service.FileValidationService;
 
+import com.agrotech.service.NavigationService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.application.Platform;
+import javafx.stage.Stage;
+
 import java.io.File;
 
 
@@ -101,7 +105,18 @@ public class WelcomeController {
 
                 Platform.runLater(() -> {
                     if (success) {
-                        updateState(UploadState.SUCCESS);
+                        try {
+                            // Enriquecer los datos
+                            DataTransformationService.getInstance()
+                                    .enrichSensorData(processingService.getProcessedData());
+
+                            // Navegar al dashboard
+                            Stage stage = (Stage) dropZone.getScene().getWindow();
+                            NavigationService.getInstance().navigateToDashboard(stage);
+                        } catch (Exception e) {
+                            updateState(UploadState.ERROR);
+                            showError("Error al cambiar de vista: " + e.getMessage());
+                        }
                     } else {
                         updateState(UploadState.ERROR);
                         showError("Error al procesar el archivo");
