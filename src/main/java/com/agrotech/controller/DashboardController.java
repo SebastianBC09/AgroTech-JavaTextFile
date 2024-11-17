@@ -2,7 +2,9 @@ package com.agrotech.controller;
 
 import com.agrotech.handler.*;
 import com.agrotech.model.ExportData;
+import com.agrotech.model.SensorDataEnriched;
 import com.agrotech.model.ValidationResult;
+import com.agrotech.service.DataTransformationService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -78,6 +80,27 @@ public class DashboardController {
 
         // Iniciar actualizaciones de tiempo
         dateTimeHandler.startClock();
+    }
+
+    public void initializeWithData() {
+        SensorDataEnriched latestData = DataTransformationService.getInstance().getLatestReading();
+        if (latestData == null) {
+            showAlert("Error", "No hay datos disponibles para mostrar");
+            return;
+        }
+
+        // Inicializar campos con los últimos datos
+        tempInput.setText(String.format("%.1f", latestData.waterData().temperature()));
+        tempUnitCombo.setValue(latestData.waterData().temperatureUnit());
+
+        // Actualizar última actualización
+        dateTimeHandler.updateLastUpdateTime(latestData.timestamp());
+
+        // Configurar el slider con el nivel de irrigación
+        approximateVolSlider.setValue(latestData.irrigationLevel());
+
+        // Actualizar estado del sistema
+        updateSystemStatus();
     }
 
     private void setupTooltips() {
