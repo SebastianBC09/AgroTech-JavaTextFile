@@ -73,39 +73,77 @@ public class DashboardController {
         setupMainPanel();
         setupBottomPanel();
 
+        // Configurar tooltips
+        setupTooltips();
+
         // Iniciar actualizaciones de tiempo
         dateTimeHandler.startClock();
     }
 
+    private void setupTooltips() {
+        // Tooltips para campos de temperatura
+        tempInput.setTooltip(new Tooltip("Ingrese la temperatura del agua"));
+        tempUnitCombo.setTooltip(new Tooltip("Seleccione la unidad de temperatura"));
+
+        // Tooltips para campos de volumen
+        volInput.setTooltip(new Tooltip("Ingrese el volumen de agua"));
+        volUnitCombo.setTooltip(new Tooltip("Seleccione la unidad de volumen"));
+
+        // Tooltips para botones de exportación
+        sqlButton.setTooltip(new Tooltip("Exportar datos en formato SQL"));
+        nosqlButton.setTooltip(new Tooltip("Exportar datos en formato NoSQL"));
+        jsonButton.setTooltip(new Tooltip("Exportar datos en formato JSON"));
+
+        // Tooltips para medidas
+        containerRadio.setTooltip(new Tooltip("Medir por contenedores"));
+        containerTypeCombo.setTooltip(new Tooltip("Seleccione el tipo de contenedor"));
+        containerCountSpinner.setTooltip(new Tooltip("Cantidad de contenedores"));
+    }
+
     private void initializeHandlers() {
-        temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
-        exportHandler = new ExportHandler();
-        dateTimeHandler = new DateTimeHandler(dateLabel, lastUpdateLabel);
-        validationHandler = new ValidationHandler(temperatureHandler, measurementHandler);
+        try {
+            // 1. Temperatura
+            temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
 
-        measurementHandler = new MeasurementHandler(
-                volInput,
-                volUnitCombo,
-                containerRadio,
-                containerTypeCombo,
-                containerCountSpinner,
-                pumpRadio,
-                pumpTypeCombo,
-                pumpTimeInput,
-                hoseRadio,
-                hoseTypeCombo,
-                hoseTimeInput,
-                furrowRadio,
-                furrowLengthInput,
-                furrowWidthInput,
-                furrowDepthCombo
-        );
+            // 2. Measurement - debe ir ANTES del ValidationHandler
+            measurementHandler = new MeasurementHandler(
+                    volInput,
+                    volUnitCombo,
+                    containerRadio,
+                    containerTypeCombo,
+                    containerCountSpinner,
+                    pumpRadio,
+                    pumpTypeCombo,
+                    pumpTimeInput,
+                    hoseRadio,
+                    hoseTypeCombo,
+                    hoseTimeInput,
+                    furrowRadio,
+                    furrowLengthInput,
+                    furrowWidthInput,
+                    furrowDepthCombo
+            );
 
-        // Configurar callback para actualización de volumen
-        measurementHandler.setOnVolumeUpdated(data -> {
-            dateTimeHandler.updateLastUpdateTime();
-            updateSliderLabel(approximateVolSlider.getValue());
-        });
+            // 3. Validation - debe ir DESPUÉS de crear los otros handlers
+            validationHandler = new ValidationHandler(temperatureHandler, measurementHandler);
+
+            // 4. Export
+            exportHandler = new ExportHandler();
+
+            // 5. DateTime
+            dateTimeHandler = new DateTimeHandler(dateLabel, lastUpdateLabel);
+
+            // Configurar callback para actualización de volumen
+            measurementHandler.setOnVolumeUpdated(data -> {
+                dateTimeHandler.updateLastUpdateTime();
+                updateSliderLabel(approximateVolSlider.getValue());
+            });
+        } catch (Exception e) {
+            String errorMessage = "Error al inicializar handlers: " + e.getMessage();
+            System.err.println(errorMessage);
+            e.printStackTrace();
+            showAlert("Error", errorMessage);
+        }
     }
 
     private void setupTopPanel() {
@@ -143,11 +181,6 @@ public class DashboardController {
         updateSliderLabel(50);
     }
 
-    private void setupTooltips() {
-        volInput.setTooltip(new Tooltip("Volumen de agua"));
-        volUnitCombo.setTooltip(new Tooltip("Unidad de volumen"));
-        approximateVolSlider.setTooltip(new Tooltip("Nivel aproximado de riego"));
-    }
 
     private void setupExportButtons() {
         sqlButton.setOnAction(e -> {
@@ -206,9 +239,7 @@ public class DashboardController {
     }
 
     private void showAlert(String title, String content) {
-        Alert alert = new Alert(
-                title.equals("Error") ? Alert.AlertType.ERROR : Alert.AlertType.INFORMATION
-        );
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
