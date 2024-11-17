@@ -1,5 +1,7 @@
 package com.agrotech.controller;
 
+import com.agrotech.handler.TemperatureHandler;
+import com.agrotech.service.TemperatureService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -26,6 +28,12 @@ public class DashboardController {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    private final TemperatureService temperatureService;
+
+    public DashboardController() {
+        this.temperatureService = new TemperatureService();
+    }
 
     /**
      * Tasas de flujo para diferentes tipos de bombas (L/h)
@@ -77,6 +85,7 @@ public class DashboardController {
     // Controles de Temperatura
     @FXML private TextField tempInput;
     @FXML private ComboBox<String> tempUnitCombo;
+    private TemperatureHandler temperatureHandler;
 
     // Controles de Volumen Básicos
     @FXML private TextField volInput;
@@ -124,6 +133,7 @@ public class DashboardController {
     // region Métodos de Inicialización
     @FXML
     public void initialize() {
+        temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
         setupDateTime();
         setupTopPanel();
         setupCenterPanel();
@@ -175,7 +185,6 @@ public class DashboardController {
      * Configura el panel central con controles de temperatura y volumen.
      */
     private void setupCenterPanel() {
-        setupTemperatureControls();
         setupVolumeControls();
     }
 
@@ -201,8 +210,6 @@ public class DashboardController {
      * Configura los tooltips principales del dashboard.
      */
     private void setupMainTooltips() {
-        tempInput.setTooltip(new Tooltip("Temperatura del agua utilizada"));
-        tempUnitCombo.setTooltip(new Tooltip("Unidad de temperatura"));
         volInput.setTooltip(new Tooltip("Volumen de agua"));
         volUnitCombo.setTooltip(new Tooltip("Unidad de volumen"));
         approximateVolSlider.setTooltip(new Tooltip("Nivel aproximado de riego"));
@@ -342,96 +349,6 @@ public class DashboardController {
 
         return true;
     }
-// endregion
-    // region Control de Temperatura
-    /**
-     * Configura los controles de temperatura.
-     */
-    private void setupTemperatureControls() {
-        // Configurar unidades de temperatura
-        tempUnitCombo.getItems().addAll("°C", "°F");
-        tempUnitCombo.setValue("°C");
-
-        // Configurar validación de entrada
-        setupTemperatureValidation();
-
-        // Configurar conversión automática
-        tempUnitCombo.setOnAction(e -> convertTemperature());
-
-        // Tooltips
-        tempInput.setTooltip(new Tooltip("Rango permitido: 0-50°C / 32-122°F"));
-    }
-
-    /**
-     * Configura la validación de entrada para temperatura.
-     */
-    private void setupTemperatureValidation() {
-        tempInput.textProperty().addListener((obs, old, newVal) -> {
-            if (!newVal.matches("-?\\d*\\.?\\d*")) {
-                tempInput.setText(old);
-                return;
-            }
-
-            try {
-                if (!newVal.isEmpty()) {
-                    double temp = Double.parseDouble(newVal);
-                    boolean isValid = tempUnitCombo.getValue().equals("°C") ?
-                            temp >= 0 && temp <= 50 :
-                            temp >= 32 && temp <= 122;
-
-                    if (!isValid) {
-                        tempInput.setText(old);
-                    }
-                }
-            } catch (NumberFormatException ignored) {
-                tempInput.setText(old);
-            }
-        });
-    }
-
-    /**
-     * Configura temperatura fría predefinida.
-     */
-    @FXML
-    private void setTempFria() {
-        tempInput.setText("15");
-        tempUnitCombo.setValue("°C");
-    }
-
-    /**
-     * Configura temperatura templada predefinida.
-     */
-    @FXML
-    private void setTempTemplada() {
-        tempInput.setText("20");
-        tempUnitCombo.setValue("°C");
-    }
-
-    /**
-     * Configura temperatura caliente predefinida.
-     */
-    @FXML
-    private void setTempCaliente() {
-        tempInput.setText("35");
-        tempUnitCombo.setValue("°C");
-    }
-
-    /**
-     * Convierte la temperatura entre Celsius y Fahrenheit.
-     */
-    private void convertTemperature() {
-        if (tempInput.getText().isEmpty()) return;
-
-        try {
-            double temp = Double.parseDouble(tempInput.getText());
-            double converted = tempUnitCombo.getValue().equals("°C") ?
-                    (temp - 32) * 5/9 :  // F a C
-                    temp * 9/5 + 32;     // C a F
-
-            tempInput.setText(String.format("%.1f", converted));
-        } catch (NumberFormatException ignored) {}
-    }
-// endregion
 
 // region Control de Volumen
     /**
@@ -1226,4 +1143,25 @@ public class DashboardController {
         }
     }
 // endregion
+
+// region Acciones de UI
+    //TODO: REORDENAR ESTOS CONTROLES O ACCIONES DE UI DESPUES
+    @FXML
+    private void setTempFria() {
+        temperatureHandler.setPresetTemperature("fria");
+    }
+
+    @FXML
+    private void setTempTemplada() {
+        temperatureHandler.setPresetTemperature("templada");
+    }
+
+    @FXML
+    private void setTempCaliente() {
+        temperatureHandler.setPresetTemperature("caliente");
+    }
+// endregion
 }
+
+
+
