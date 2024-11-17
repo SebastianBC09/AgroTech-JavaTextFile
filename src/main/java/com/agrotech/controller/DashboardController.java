@@ -1,5 +1,6 @@
 package com.agrotech.controller;
 
+import com.agrotech.handler.DateTimeHandler;
 import com.agrotech.handler.ExportHandler;
 import com.agrotech.handler.TemperatureHandler;
 import com.agrotech.model.ExportData;
@@ -8,15 +9,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
-import javafx.animation.*;
-import javafx.stage.FileChooser;
-import javafx.util.Duration;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
@@ -26,11 +18,6 @@ import java.util.Map;
  */
 public class DashboardController {
     // region Constantes
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final DateTimeFormatter TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("HH:mm:ss");
-
     private final TemperatureService temperatureService;
 
     public DashboardController() {
@@ -90,6 +77,7 @@ public class DashboardController {
 
     private TemperatureHandler temperatureHandler;
     private ExportHandler exportHandler;
+    private DateTimeHandler dateTimeHandler;
 
     // Controles de Volumen Básicos
     @FXML private TextField volInput;
@@ -131,15 +119,16 @@ public class DashboardController {
     @FXML private Button jsonButton;
     // endregion
 
-    // Variables de clase
-    private Timeline clockTimeline;
 
     // region Métodos de Inicialización
     @FXML
     public void initialize() {
         temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
         exportHandler = new ExportHandler();
-        setupDateTime();
+        dateTimeHandler = new DateTimeHandler(dateLabel, lastUpdateLabel);
+
+        dateTimeHandler.startClock();
+
         setupTopPanel();
         setupCenterPanel();
         setupMainPanel();
@@ -159,29 +148,18 @@ public class DashboardController {
         furrowRadio.setDisable(false);
     }
 
-    /**
-     * Configura el reloj y actualizaciones de fecha/hora.
-     */
-    private void setupDateTime() {
-        clockTimeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), e -> updateDateTime())
-        );
-        clockTimeline.setCycleCount(Animation.INDEFINITE);
-        clockTimeline.play();
-    }
+
 
     /**
      * Configura el panel superior con información general.
      */
     private void setupTopPanel() {
-        updateDateTime();
         setupCropInfo();
         updateSystemStatus();
-        updateLastUpdateTime();
+        dateTimeHandler.updateLastUpdateTime();
 
         // Tooltips
         cropTypeCombo.setTooltip(new Tooltip("Seleccione el tipo de cultivo"));
-        // Para el Circle, usamos Tooltip.install en lugar de setTooltip
         Tooltip statusTooltip = new Tooltip("Indicador del estado del sistema");
         Tooltip.install(statusIndicator, statusTooltip);
     }
@@ -269,13 +247,6 @@ public class DashboardController {
         );
     }
 
-    /**
-     * Actualiza la fecha y hora mostrada en el dashboard.
-     */
-    private void updateDateTime() {
-        dateLabel.setText("Fecha: " +
-                LocalDateTime.now().format(DATE_TIME_FORMATTER));
-    }
 
     /**
      * Configura la información del cultivo.
@@ -302,15 +273,6 @@ public class DashboardController {
         statusIndicator.getStyleClass().removeAll("warning", "error");
         statusIndicator.getStyleClass().add("success");
         systemStatusLabel.setText("Sistema Operativo");
-    }
-
-    /**
-     * Actualiza la hora de última actualización.
-     */
-    private void updateLastUpdateTime() {
-        lastUpdateLabel.setText(
-                LocalDateTime.now().format(TIME_FORMATTER)
-        );
     }
 
     /**
@@ -347,9 +309,7 @@ public class DashboardController {
      */
     @FXML
     public void stop() {
-        if (clockTimeline != null) {
-            clockTimeline.stop();
-        }
+        dateTimeHandler.stopClock();
     }
 // endregion
 
@@ -671,7 +631,7 @@ public class DashboardController {
     private void updateVolume(double volume) {
         volInput.setText(String.format("%.2f", volume));
         volUnitCombo.setValue("L");
-        updateLastUpdateTime();
+        dateTimeHandler.updateLastUpdateTime();
     }
 
     /**
@@ -976,7 +936,7 @@ public class DashboardController {
 // endregion
 
 // region Acciones de UI
-    //TODO: REORDENAR ESTOS CONTROLES O ACCIONES DE UI DESPUES
+    //TODO: REORDENAR ESTOS CONTROLES O ACCIONES DE UI DESPUÉS
     @FXML
     private void setTempFria() {
         temperatureHandler.setPresetTemperature("fria");
