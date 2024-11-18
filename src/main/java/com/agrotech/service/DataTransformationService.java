@@ -50,7 +50,6 @@ public class DataTransformationService {
                     original.irrigationStatus(),
                     original.cropType(),
                     waterData,
-                    original.measurementData(),
                     original.irrigationLevel()
             ));
             System.out.println("Datos de agua actualizados para el índice: " + index);
@@ -68,7 +67,6 @@ public class DataTransformationService {
                             data.irrigationStatus(),
                             cropType,
                             data.waterData(),
-                            data.measurementData(),
                             data.irrigationLevel()
                     ))
                     .collect(Collectors.toList());
