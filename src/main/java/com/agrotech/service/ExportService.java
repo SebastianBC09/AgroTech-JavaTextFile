@@ -1,7 +1,6 @@
 package com.agrotech.service;
 
 import com.agrotech.model.ExportData;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -42,19 +41,19 @@ public class ExportService {
 
         sql.append(String.format("    TIMESTAMP '%s',\n",
                         LocalDateTime.now().format(DATE_TIME_FORMATTER)))
-                .append(String.format("    '%s',\n", data.getCropType()))
+                .append(String.format("    '%s',\n", data.cropType()))
                 .append("    '{")
-                .append("\"soil_humidity\": 0.00,")
-                .append("\"air_temperature\": 0.00,")
-                .append("\"air_humidity\": 0.00")
+                .append(String.format("\"soil_humidity\": %.2f,", data.soilHumidity()))
+                .append(String.format("\"air_temperature\": %.2f,", data.airTemperature()))
+                .append(String.format("\"air_humidity\": %.2f", data.airHumidity()))
                 .append("}',\n")
-                .append(String.format("    %.2f,\n", data.getWaterTemperature()))
-                .append(String.format("    '%s',\n", data.getTemperatureUnit()))
-                .append(String.format("    %.2f,\n", data.getWaterVolume()))
-                .append(String.format("    '%s',\n", data.getVolumeUnit()))
-                .append(String.format("    '%s',\n", data.getMeasurementMethod()))
-                .append("    ").append(data.getMeasurementDetails()).append(",\n")
-                .append(String.format("    %.0f\n", data.getIrrigationLevel()))
+                .append(String.format("    %.2f,\n", data.waterTemperature()))
+                .append(String.format("    '%s',\n", data.temperatureUnit()))
+                .append(String.format("    %.2f,\n", data.waterVolume()))
+                .append(String.format("    '%s',\n", data.volumeUnit()))
+                .append(String.format("    '%s',\n", data.measurementMethod()))
+                .append("    ").append(data.measurementDetails()).append(",\n")
+                .append(String.format("    %.0f\n", data.irrigationLevel()))
                 .append(");");
 
         return sql.toString();
@@ -66,23 +65,23 @@ public class ExportService {
         nosql.append("db.agricultural_records.insertOne({\n")
                 .append(String.format("    timestamp: ISODate(\"%s\"),\n",
                         LocalDateTime.now().format(DATE_TIME_FORMATTER)))
-                .append(String.format("    crop_type: \"%s\",\n", data.getCropType()))
+                .append(String.format("    crop_type: \"%s\",\n", data.cropType()))
                 .append("    sensor_data: {\n")
-                .append("        soil_humidity: 0.00,\n")
-                .append("        air_temperature: 0.00,\n")
-                .append("        air_humidity: 0.00\n")
+                .append(String.format("        soil_humidity: %.2f,\n", data.soilHumidity()))
+                .append(String.format("        air_temperature: %.2f,\n", data.airTemperature()))
+                .append(String.format("        air_humidity: %.2f\n", data.airHumidity()))
                 .append("    },\n")
                 .append("    water_data: {\n")
-                .append(String.format("        temperature: %.2f,\n", data.getWaterTemperature()))
-                .append(String.format("        temperature_unit: \"%s\",\n", data.getTemperatureUnit()))
-                .append(String.format("        volume: %.2f,\n", data.getWaterVolume()))
-                .append(String.format("        volume_unit: \"%s\"\n", data.getVolumeUnit()))
+                .append(String.format("        temperature: %.2f,\n", data.waterTemperature()))
+                .append(String.format("        temperature_unit: \"%s\",\n", data.temperatureUnit()))
+                .append(String.format("        volume: %.2f,\n", data.waterVolume()))
+                .append(String.format("        volume_unit: \"%s\"\n", data.volumeUnit()))
                 .append("    },\n")
                 .append("    measurement: {\n")
-                .append(String.format("        method: \"%s\",\n", data.getMeasurementMethod()))
-                .append("        details: ").append(data.getMeasurementDetails()).append("\n")
+                .append(String.format("        method: \"%s\",\n", data.measurementMethod()))
+                .append("        details: ").append(data.measurementDetails()).append("\n")
                 .append("    },\n")
-                .append(String.format("    irrigation_level: %.0f,\n", data.getIrrigationLevel()))
+                .append(String.format("    irrigation_level: %.0f,\n", data.irrigationLevel()))
                 .append("    created_at: new Date()\n")
                 .append("});");
 
@@ -96,23 +95,23 @@ public class ExportService {
                 .append("    \"agricultural_record\": {\n")
                 .append(String.format("        \"timestamp\": \"%s\",\n",
                         LocalDateTime.now().format(DATE_TIME_FORMATTER)))
-                .append(String.format("        \"crop_type\": \"%s\",\n", data.getCropType()))
+                .append(String.format("        \"crop_type\": \"%s\",\n", data.cropType()))
                 .append("        \"sensor_data\": {\n")
-                .append("            \"soil_humidity\": 0.00,\n")
-                .append("            \"air_temperature\": 0.00,\n")
-                .append("            \"air_humidity\": 0.00\n")
+                .append(String.format("            \"soil_humidity\": %.2f,\n", data.soilHumidity()))
+                .append(String.format("            \"air_temperature\": %.2f,\n", data.airTemperature()))
+                .append(String.format("            \"air_humidity\": %.2f\n", data.airHumidity()))
                 .append("        },\n")
                 .append("        \"water_data\": {\n")
-                .append(String.format("            \"temperature\": %.2f,\n", data.getWaterTemperature()))
-                .append(String.format("            \"temperature_unit\": \"%s\",\n", data.getTemperatureUnit()))
-                .append(String.format("            \"volume\": %.2f,\n", data.getWaterVolume()))
-                .append(String.format("            \"volume_unit\": \"%s\"\n", data.getVolumeUnit()))
+                .append(String.format("            \"temperature\": %.2f,\n", data.waterTemperature()))
+                .append(String.format("            \"temperature_unit\": \"%s\",\n", data.temperatureUnit()))
+                .append(String.format("            \"volume\": %.2f,\n", data.waterVolume()))
+                .append(String.format("            \"volume_unit\": \"%s\"\n", data.volumeUnit()))
                 .append("        },\n")
                 .append("        \"measurement\": {\n")
-                .append(String.format("            \"method\": \"%s\",\n", data.getMeasurementMethod()))
-                .append("            \"details\": ").append(data.getMeasurementDetails())
+                .append(String.format("            \"method\": \"%s\",\n", data.measurementMethod()))
+                .append("            \"details\": ").append(data.measurementDetails())
                 .append("\n        },\n")
-                .append(String.format("        \"irrigation_level\": %.0f\n", data.getIrrigationLevel()))
+                .append(String.format("        \"irrigation_level\": %.0f\n", data.irrigationLevel()))
                 .append("    }\n")
                 .append("}");
 
