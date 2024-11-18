@@ -30,6 +30,6 @@ public class DataTransformationService {
         if (enrichedData.isEmpty()) {
             return null;
         }
-        return enrichedData.get(enrichedData.size() - 1);
+        return enrichedData.getLast();
     }
 }
