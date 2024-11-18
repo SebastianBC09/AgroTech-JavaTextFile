@@ -4,22 +4,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeService {
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter DATETIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final String LAST_UPDATE_TEMPLATE = "Última actualización: %s";
 
     public String getFormattedCurrentDate() {
-        return LocalDateTime.now().format(dateTimeFormatter);
+        return LocalDateTime.now().format(DATETIME_FORMATTER);
     }
 
     public String formatTime() {
-        return "Última actualización: " + LocalDateTime.now().format(timeFormatter);
+        return String.format(LAST_UPDATE_TEMPLATE,
+                LocalDateTime.now().format(TIME_FORMATTER));
     }
 
     public String formatTime(LocalDateTime timestamp) {
-        return "Última actualización: " + timestamp.format(timeFormatter);
-    }
-
-    public String formatDateTime() {
-        return LocalDateTime.now().format(dateTimeFormatter);
+        return String.format(LAST_UPDATE_TEMPLATE,
+                timestamp.format(TIME_FORMATTER));
     }
 }
