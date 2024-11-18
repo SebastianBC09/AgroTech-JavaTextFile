@@ -25,14 +25,6 @@ public class FlowBasedVolumeCalculator implements VolumeCalculator {
     }
 
     @Override
-    public String getDetailsJson() {
-        return String.format(
-                "{\"flow_type\":\"%s\",\"flow_rate\":%.2f,\"duration_minutes\":%.2f}",
-                flowType, flowRate, minutes
-        );
-    }
-
-    @Override
     public boolean isValid() {
         return flowType != null &&
                 flowRate > 0.0 &&
