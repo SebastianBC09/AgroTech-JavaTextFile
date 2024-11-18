@@ -19,8 +19,8 @@ public class TemperatureService {
         if (fromUnit.equals(toUnit)) return value;
 
         return switch (toUnit) {
-            case "°C" -> (value - 32) * 5.0/9.0;  // F to C - Note the 5.0/9.0
-            case "°F" -> (value * 9.0/5.0) + 32;  // C to F - Note the 9.0/5.0
+            case "°C" -> (value - 32) * 5.0/9.0;
+            case "°F" -> (value * 9.0/5.0) + 32;
             default -> throw new IllegalArgumentException("Unidad de temperatura no soportada: " + toUnit);
         };
     }

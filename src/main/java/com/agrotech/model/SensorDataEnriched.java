@@ -21,9 +21,9 @@ public record SensorDataEnriched(
                 basic.airTemperature(),
                 basic.airHumidity(),
                 basic.irrigationStatus(),
-                null,  // cropType inicialmente vacío
+                null,
                 new WaterData(basic.airTemperature(), "°C", 0.0, "L"), // valores por defecto
-                50.0   // valor por defecto del slider
+                50.0
         );
     }
 

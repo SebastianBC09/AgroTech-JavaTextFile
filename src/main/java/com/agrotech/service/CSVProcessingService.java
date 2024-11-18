@@ -16,13 +16,12 @@ public class CSVProcessingService {
 
     public boolean processCSVFile(File file, Consumer<Double> progressCallback)
             throws CSVProcessingException {
-        processedData.clear(); // Limpiar datos anteriores
+        processedData.clear();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             List<String> lines = reader.lines().toList();
-            int totalLines = lines.size() - 1; // Excluir header
+            int totalLines = lines.size() - 1;
 
-            // Saltar el header
             boolean isFirstLine = true;
             int currentLine = 0;
 
@@ -67,15 +66,7 @@ public class CSVProcessingService {
     }
 
     public List<SensorData> getProcessedData() {
-        return new ArrayList<>(processedData); // Retorna una copia para evitar modificaciones externas
-    }
-
-    public String getDataSummary() {
-        if (processedData.isEmpty()) {
-            return "No hay datos procesados";
-        }
-
-        return String.format("Datos procesados: %d registros", processedData.size());
+        return new ArrayList<>(processedData);
     }
 }
 

@@ -5,7 +5,6 @@ import com.agrotech.model.MeasurementType;
 import com.agrotech.model.VolumeCalculator;
 import com.agrotech.model.VolumeUnit;
 import com.agrotech.service.MeasurementService;
-import com.agrotech.util.VolumeValidator;
 import javafx.scene.control.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +12,8 @@ import java.util.function.Consumer;
 
 public class MeasurementHandler {
     private final MeasurementService measurementService;
-    private VolumeUnit currentUnit = VolumeUnit.LITER; // Unidad por defecto
+    private VolumeUnit currentUnit = VolumeUnit.LITER;
 
-    // Controles UI
     private final TextField volInput;
     private final ComboBox<String> volUnitCombo;
     private final RadioButton containerRadio;
@@ -51,15 +49,12 @@ public class MeasurementHandler {
             TextField furrowWidthInput,
             ComboBox<String> furrowDepthCombo
     ) {
-        // Inicializar servicio
         this.measurementService = new MeasurementService();
 
-        // Verificar componentes críticos
         if (volInput == null || volUnitCombo == null) {
             throw new IllegalArgumentException("Los componentes de volumen no pueden ser null");
         }
 
-        // Inicializar referencias UI
         this.volInput = volInput;
         this.volUnitCombo = volUnitCombo;
         this.containerRadio = containerRadio;
@@ -290,7 +285,6 @@ public class MeasurementHandler {
         return params;
     }
 
-    // Métodos de validación
     private boolean isContainerInputValid() {
         return containerTypeCombo.getValue() != null &&
                 containerCountSpinner.getValue() != null;
@@ -312,7 +306,6 @@ public class MeasurementHandler {
                 furrowDepthCombo.getValue() != null;
     }
 
-    // Métodos utilitarios
     private boolean isValidDoubleInput(TextField input) {
         try {
             if (input.getText().isEmpty()) return false;
@@ -331,7 +324,6 @@ public class MeasurementHandler {
         }
     }
 
-    // Métodos públicos adicionales
     public void reset() {
         volInput.clear();
         volUnitCombo.setValue("L");
@@ -349,24 +341,6 @@ public class MeasurementHandler {
         furrowLengthInput.clear();
         furrowWidthInput.clear();
         furrowDepthCombo.setValue(null);
-    }
-
-    public void setVolume(double volume, VolumeUnit unit) {
-        currentUnit = unit;
-        volInput.setText(String.format("%.2f", volume));
-        volUnitCombo.setValue(unit.getSymbol());
-    }
-
-    public String getMeasurementDetailsJson() {
-        MeasurementType type = getCurrentMeasurementType();
-        Map<String, Object> params = buildParameters(type);
-
-        try {
-            VolumeCalculator calculator = measurementService.createCalculator(type, params);
-            return calculator.getDetailsJson();
-        } catch (Exception e) {
-            return "{}";
-        }
     }
 
     public void showError(String message) {
@@ -520,18 +494,6 @@ public class MeasurementHandler {
         } catch (IllegalArgumentException e) {
             showError("Error en la conversión: " + e.getMessage());
         }
-    }
-
-    public double getCurrentVolume() {
-        try {
-            return VolumeValidator.validateAndConvertVolume(volInput.getText());
-        } catch (IllegalArgumentException e) {
-            return 0.0;
-        }
-    }
-
-    public VolumeUnit getCurrentUnit() {
-        return currentUnit;
     }
 
     public void setOnVolumeUpdated(Consumer<MeasurementData> callback) {

@@ -13,50 +13,33 @@ import javafx.scene.shape.Circle;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Controlador principal del dashboard para el sistema de riego agrícola.
- * Maneja la visualización y registro de datos de riego, incluyendo temperatura
- * y volumen del agua, así como la exportación de datos en diferentes formatos.
- */
 public class DashboardController {
 
     @FXML private BorderPane mainContainer;
-
     @FXML private Label dateLabel;
     @FXML private ComboBox<String> cropTypeCombo;
     @FXML private Circle statusIndicator;
     @FXML private Label systemStatusLabel;
     @FXML private Label lastUpdateLabel;
-
-
     @FXML private TextField tempInput;
     @FXML private ComboBox<String> tempUnitCombo;
-
     @FXML private TextField volInput;
     @FXML private ComboBox<String> volUnitCombo;
-
     @FXML private RadioButton containerRadio;
     @FXML private ComboBox<String> containerTypeCombo;
     @FXML private Spinner<Integer> containerCountSpinner;
-
     @FXML private RadioButton pumpRadio;
     @FXML private ComboBox<String> pumpTypeCombo;
     @FXML private TextField pumpTimeInput;
-
     @FXML private RadioButton hoseRadio;
     @FXML private ComboBox<String> hoseTypeCombo;
     @FXML private TextField hoseTimeInput;
-
     @FXML private RadioButton furrowRadio;
     @FXML private TextField furrowLengthInput;
     @FXML private TextField furrowWidthInput;
     @FXML private ComboBox<String> furrowDepthCombo;
-
-
-
     @FXML private Slider approximateVolSlider;
     @FXML private Label sliderLabel;
-
     @FXML private Button sqlButton;
     @FXML private Button nosqlButton;
     @FXML private Button jsonButton;
@@ -91,22 +74,13 @@ public class DashboardController {
             showAlert("Error", "No hay datos disponibles para mostrar");
             return;
         }
-
         try {
-            // Configurar el slider con nivel de irrigación por defecto
             approximateVolSlider.setValue(latestData.irrigationLevel());
-
-            // Actualizar última actualización con el timestamp del sensor
             dateTimeHandler.updateLastUpdateTime(latestData.timestamp());
-
-            // Pre-seleccionar opciones en combos si es necesario
             if (latestData.cropType() != null && cropTypeCombo.getItems().contains(latestData.cropType())) {
                 cropTypeCombo.setValue(latestData.cropType());
             }
-
-            // Actualizar estado del sistema
             updateSystemStatus();
-
             System.out.println("Dashboard inicializado con datos del sensor");
         } catch (Exception e) {
             System.err.println("Error al inicializar dashboard con datos: " + e.getMessage());
@@ -136,10 +110,7 @@ public class DashboardController {
 
     private void initializeHandlers() {
         try {
-            // 1. Temperatura
             temperatureHandler = new TemperatureHandler(tempInput, tempUnitCombo);
-
-            // 2. Measurement - debe ir ANTES del ValidationHandler
             measurementHandler = new MeasurementHandler(
                     volInput,
                     volUnitCombo,
@@ -158,16 +129,12 @@ public class DashboardController {
                     furrowDepthCombo
             );
 
-            // 3. Validation - debe ir DESPUÉS de crear los otros handlers
             validationHandler = new ValidationHandler(temperatureHandler, measurementHandler);
 
-            // 4. Export
             exportHandler = new ExportHandler();
 
-            // 5. DateTime
             dateTimeHandler = new DateTimeHandler(dateLabel, lastUpdateLabel);
 
-            // Configurar callback para actualización de volumen
             measurementHandler.setOnVolumeUpdated(data -> {
                 dateTimeHandler.updateLastUpdateTime();
                 updateSliderLabel(approximateVolSlider.getValue());
@@ -184,8 +151,6 @@ public class DashboardController {
         setupCropInfo();
         updateSystemStatus();
         dateTimeHandler.updateLastUpdateTime();
-
-        // Tooltips
         cropTypeCombo.setTooltip(new Tooltip("Seleccione el tipo de cultivo"));
         Tooltip.install(statusIndicator, new Tooltip("Indicador del estado del sistema"));
     }
@@ -240,18 +205,13 @@ public class DashboardController {
     }
 
     private ExportData createExportData() {
-        // Obtener los últimos datos del sensor
         SensorDataEnriched latestSensorData = DataTransformationService.getInstance().getLatestReading();
         if (latestSensorData == null) {
             System.err.println("No hay datos de sensor disponibles");
             return null;
         }
-
         var measurement = measurementHandler.getCurrentMeasurement();
-
-        // Crear un mapa para los detalles de medición
         Map<String, Object> measurementDetails = new HashMap<>();
-        // Agregar los detalles relevantes según el tipo de medición
         switch (measurement.type()) {
             case CONTAINER -> {
                 measurementDetails.put("containerType", containerTypeCombo.getValue());
@@ -329,11 +289,6 @@ public class DashboardController {
         temperatureHandler.setPresetTemperature("caliente");
     }
 
-    @FXML
-    public void stop() {
-        dateTimeHandler.stopClock();
-    }
-
     private boolean validateExport() {
         ValidationResult result = validationHandler.validateExportData(cropTypeCombo.getValue());
 
@@ -343,19 +298,6 @@ public class DashboardController {
         }
 
         return true;
-    }
-
-    private void handleExport(String type) {
-        if (!validateExport()) {
-            return;
-        }
-
-        ExportData data = createExportData();
-        switch (type) {
-            case "SQL" -> exportHandler.exportToSQL(mainContainer.getScene().getWindow(), data);
-            case "NoSQL" -> exportHandler.exportToNoSQL(mainContainer.getScene().getWindow(), data);
-            case "JSON" -> exportHandler.exportToJSON(mainContainer.getScene().getWindow(), data);
-        }
     }
 }
 

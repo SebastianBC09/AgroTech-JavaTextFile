@@ -23,18 +23,9 @@ public class NavigationService {
         Parent dashboardView = loader.load();
 
         DashboardController dashboardController = loader.getController();
-        dashboardController.initializeWithData(); // Correcto, sin argumentos
+        dashboardController.initializeWithData();
 
         Scene scene = new Scene(dashboardView);
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    public void navigateToWelcome(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/welcome-view.fxml"));
-        Parent welcomeView = loader.load();
-
-        Scene scene = new Scene(welcomeView);
         stage.setScene(scene);
         stage.show();
     }

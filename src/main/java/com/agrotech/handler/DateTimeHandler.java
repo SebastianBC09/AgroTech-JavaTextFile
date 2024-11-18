@@ -43,12 +43,10 @@ public class DateTimeHandler {
         dateLabel.setText(dateTimeService.getFormattedCurrentDate());
     }
 
-    // Método original para usar hora actual
     public void updateLastUpdateTime() {
         lastUpdateLabel.setText(dateTimeService.formatTime());
     }
 
-    // Nuevo método para timestamp específico
     public void updateLastUpdateTime(LocalDateTime timestamp) {
         if (timestamp != null) {
             lastUpdateLabel.setText(dateTimeService.formatTime(timestamp));
@@ -57,11 +55,4 @@ public class DateTimeHandler {
         }
     }
 
-    public String getCurrentDateTime() {
-        return dateTimeService.formatDateTime();
-    }
-
-    public String getCurrentTime() {
-        return dateTimeService.formatTime();
-    }
 }

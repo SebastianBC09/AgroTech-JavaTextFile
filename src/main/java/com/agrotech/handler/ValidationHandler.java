@@ -8,7 +8,6 @@ public class ValidationHandler {
 
     public ValidationHandler(TemperatureHandler temperatureHandler,
                              MeasurementHandler measurementHandler) {
-        // Validar que los handlers no sean null
         if (temperatureHandler == null) {
             throw new IllegalArgumentException("TemperatureHandler no puede ser null");
         }
@@ -21,18 +20,15 @@ public class ValidationHandler {
     }
 
     public ValidationResult validateExportData(String cropType) {
-        // Validar cultivo
         if (cropType == null || cropType.isEmpty()) {
             return ValidationResult.error("Seleccione un tipo de cultivo");
         }
 
-        // Validar temperatura
         ValidationResult tempValidation = validateTemperature();
         if (!tempValidation.isValid()) {
             return tempValidation;
         }
 
-        // Validar mediciones
         ValidationResult measurementValidation = validateMeasurement();
         if (!measurementValidation.isValid()) {
             return measurementValidation;
@@ -54,6 +50,7 @@ public class ValidationHandler {
             return ValidationResult.error("Error al validar la temperatura: " + e.getMessage());
         }
     }
+
     private ValidationResult validateMeasurement() {
         try {
             if (measurementHandler == null) {

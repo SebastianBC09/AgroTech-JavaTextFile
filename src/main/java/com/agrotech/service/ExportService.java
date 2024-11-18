@@ -11,7 +11,6 @@ public class ExportService {
     public String generateSQLScript(ExportData data) {
         StringBuilder sql = new StringBuilder();
 
-        // Crear tabla
         sql.append("""
         CREATE TABLE IF NOT EXISTS agricultural_records (
             id SERIAL PRIMARY KEY,
@@ -28,7 +27,6 @@ public class ExportService {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );""");
 
-        // Insertar datos
         sql.append("""
             INSERT INTO agricultural_records (
                 record_date, crop_type, sensor_data,

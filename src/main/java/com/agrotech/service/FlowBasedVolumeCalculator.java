@@ -4,11 +4,11 @@ import com.agrotech.model.VolumeCalculator;
 
 public class FlowBasedVolumeCalculator implements VolumeCalculator {
     private final String flowType;
-    private final double flowRate;  // L/h
+    private final double flowRate;
     private final double minutes;
 
     private static final double MIN_MINUTES = 0.0;
-    private static final double MAX_MINUTES = 1440.0; // 24 horas
+    private static final double MAX_MINUTES = 1440.0;
 
     public FlowBasedVolumeCalculator(String flowType, double flowRate, double minutes) {
         this.flowType = flowType;
@@ -38,18 +38,5 @@ public class FlowBasedVolumeCalculator implements VolumeCalculator {
                 flowRate > 0.0 &&
                 minutes >= MIN_MINUTES &&
                 minutes <= MAX_MINUTES;
-    }
-
-    // Getters para facilitar testing y debug
-    public String getFlowType() {
-        return flowType;
-    }
-
-    public double getFlowRate() {
-        return flowRate;
-    }
-
-    public double getMinutes() {
-        return minutes;
     }
 }

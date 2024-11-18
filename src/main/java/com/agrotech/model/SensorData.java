@@ -13,7 +13,6 @@ public record SensorData(
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    // Factory method para crear desde línea CSV
     public static SensorData fromCsvLine(String line) {
         String[] parts = line.split(",");
         return new SensorData(

@@ -10,7 +10,6 @@ public record MeasurementData(
         Map<String, Object> details
 ) {
     public MeasurementData {
-        // Validación defensiva
         if (type == null) {
             throw new IllegalArgumentException("El tipo de medición no puede ser null");
         }
@@ -20,7 +19,6 @@ public record MeasurementData(
         if (volume < 0) {
             throw new IllegalArgumentException("El volumen no puede ser negativo");
         }
-        // Asegurar que details sea inmutable
         details = details != null ? Collections.unmodifiableMap(details) : Collections.emptyMap();
     }
 
@@ -32,9 +30,7 @@ public record MeasurementData(
         if (newUnit == null) {
             throw new IllegalArgumentException("La nueva unidad no puede ser null");
         }
-        // Primero convertimos a litros
         double liters = getVolumeInLiters();
-        // Luego convertimos de litros a la nueva unidad
         double newVolume = liters / newUnit.getLiterConversionFactor();
         return new MeasurementData(type, newVolume, newUnit, details);
     }
