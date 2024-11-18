@@ -27,14 +27,6 @@ public class FurrowVolumeCalculator implements VolumeCalculator {
     }
 
     @Override
-    public String getDetailsJson() {
-        return String.format(
-                "{\"length\":%.2f,\"width\":%.2f,\"depth\":%.2f}",
-                length, width, depth
-        );
-    }
-
-    @Override
     public boolean isValid() {
         return isValidDimension(length, MIN_DIMENSION, MAX_LENGTH) &&
                 isValidDimension(width, MIN_DIMENSION, MAX_WIDTH) &&
