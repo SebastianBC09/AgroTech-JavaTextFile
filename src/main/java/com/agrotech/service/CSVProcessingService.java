@@ -2,13 +2,16 @@ package com.agrotech.service;
 
 import com.agrotech.exception.CSVProcessingException;
 import com.agrotech.model.SensorData;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVProcessingService {
-    private List<SensorData> processedData;
+    private final List<SensorData> processedData;
 
     public CSVProcessingService() {
         this.processedData = new ArrayList<>();
