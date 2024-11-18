@@ -1,8 +1,6 @@
 package com.agrotech.model;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 public record SensorDataEnriched(
         LocalDateTime timestamp,
