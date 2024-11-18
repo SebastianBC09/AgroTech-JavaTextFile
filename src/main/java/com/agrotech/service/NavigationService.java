@@ -22,10 +22,8 @@ public class NavigationService {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard-view.fxml"));
         Parent dashboardView = loader.load();
 
-        // Obtener el controlador
         DashboardController dashboardController = loader.getController();
-        // Inicializar datos
-        dashboardController.initializeWithData();
+        dashboardController.initializeWithData(); // Correcto, sin argumentos
 
         Scene scene = new Scene(dashboardView);
         stage.setScene(scene);
