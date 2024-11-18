@@ -26,30 +26,4 @@ public record SensorDataEnriched(
                 50.0
         );
     }
-
-    public Map<String, Object> toExportFormat() {
-        Map<String, Object> export = new HashMap<>();
-        Map<String, Object> record = new HashMap<>();
-
-        record.put("timestamp", timestamp.toString());
-        record.put("crop_type", cropType);
-
-        Map<String, Object> sensorData = new HashMap<>();
-        sensorData.put("soil_humidity", soilHumidity);
-        sensorData.put("air_temperature", airTemperature);
-        sensorData.put("air_humidity", airHumidity);
-        record.put("sensor_data", sensorData);
-
-        Map<String, Object> waterInfo = new HashMap<>();
-        waterInfo.put("temperature", waterData.temperature());
-        waterInfo.put("temperature_unit", waterData.temperatureUnit());
-        waterInfo.put("volume", waterData.volume());
-        waterInfo.put("volume_unit", waterData.volumeUnit());
-        record.put("water_data", waterInfo);
-
-        record.put("irrigation_level", irrigationLevel);
-
-        export.put("agricultural_record", record);
-        return export;
-    }
 }
