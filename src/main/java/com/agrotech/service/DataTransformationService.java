@@ -2,13 +2,15 @@ package com.agrotech.service;
 
 import com.agrotech.model.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 public class DataTransformationService {
     private static DataTransformationService instance;
-    private List<SensorDataEnriched> enrichedData;
+    private final List<SensorDataEnriched> enrichedData;
 
-    private DataTransformationService() {}
+    private DataTransformationService() {
+        this.enrichedData = new ArrayList<>();
+    }
 
     public static DataTransformationService getInstance() {
         if (instance == null) {
@@ -18,21 +20,16 @@ public class DataTransformationService {
     }
 
     public void enrichSensorData(List<SensorData> basicData) {
-        System.out.println("Enriqueciendo datos de " + basicData.size() + " registros");
-
-        enrichedData = basicData.stream()
+        enrichedData.clear();
+        enrichedData.addAll(basicData.stream()
                 .map(SensorDataEnriched::fromBasicData)
-                .collect(Collectors.toList());
-
-        System.out.println("Datos enriquecidos completado");
+                .toList());
     }
 
     public SensorDataEnriched getLatestReading() {
-        if (enrichedData == null || enrichedData.isEmpty()) {
-            System.out.println("Advertencia: No hay datos disponibles");
+        if (enrichedData.isEmpty()) {
             return null;
         }
         return enrichedData.get(enrichedData.size() - 1);
     }
-
 }
