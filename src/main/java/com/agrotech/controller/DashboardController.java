@@ -10,6 +10,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Controlador principal del dashboard para el sistema de riego agrícola.
  * Maneja la visualización y registro de datos de riego, incluyendo temperatura
@@ -89,18 +92,26 @@ public class DashboardController {
             return;
         }
 
-        // Inicializar campos con los últimos datos
-        tempInput.setText(String.format("%.1f", latestData.waterData().temperature()));
-        tempUnitCombo.setValue(latestData.waterData().temperatureUnit());
+        try {
+            // Configurar el slider con nivel de irrigación por defecto
+            approximateVolSlider.setValue(latestData.irrigationLevel());
 
-        // Actualizar última actualización
-        dateTimeHandler.updateLastUpdateTime(latestData.timestamp());
+            // Actualizar última actualización con el timestamp del sensor
+            dateTimeHandler.updateLastUpdateTime(latestData.timestamp());
 
-        // Configurar el slider con el nivel de irrigación
-        approximateVolSlider.setValue(latestData.irrigationLevel());
+            // Pre-seleccionar opciones en combos si es necesario
+            if (latestData.cropType() != null && cropTypeCombo.getItems().contains(latestData.cropType())) {
+                cropTypeCombo.setValue(latestData.cropType());
+            }
 
-        // Actualizar estado del sistema
-        updateSystemStatus();
+            // Actualizar estado del sistema
+            updateSystemStatus();
+
+            System.out.println("Dashboard inicializado con datos del sensor");
+        } catch (Exception e) {
+            System.err.println("Error al inicializar dashboard con datos: " + e.getMessage());
+            showAlert("Error", "Error al cargar los datos: " + e.getMessage());
+        }
     }
 
     private void setupTooltips() {
@@ -229,16 +240,50 @@ public class DashboardController {
     }
 
     private ExportData createExportData() {
+        // Obtener los últimos datos del sensor
+        SensorDataEnriched latestSensorData = DataTransformationService.getInstance().getLatestReading();
+        if (latestSensorData == null) {
+            System.err.println("No hay datos de sensor disponibles");
+            return null;
+        }
+
         var measurement = measurementHandler.getCurrentMeasurement();
+
+        // Crear un mapa para los detalles de medición
+        Map<String, Object> measurementDetails = new HashMap<>();
+        // Agregar los detalles relevantes según el tipo de medición
+        switch (measurement.type()) {
+            case CONTAINER -> {
+                measurementDetails.put("containerType", containerTypeCombo.getValue());
+                measurementDetails.put("containerCount", containerCountSpinner.getValue());
+            }
+            case PUMP -> {
+                measurementDetails.put("pumpType", pumpTypeCombo.getValue());
+                measurementDetails.put("pumpTime", pumpTimeInput.getText());
+            }
+            case HOSE -> {
+                measurementDetails.put("hoseType", hoseTypeCombo.getValue());
+                measurementDetails.put("hoseTime", hoseTimeInput.getText());
+            }
+            case FURROW -> {
+                measurementDetails.put("length", furrowLengthInput.getText());
+                measurementDetails.put("width", furrowWidthInput.getText());
+                measurementDetails.put("depth", furrowDepthCombo.getValue());
+            }
+        }
+
         return new ExportData(
-                cropTypeCombo.getValue(),
-                temperatureHandler.getCurrentTemperature(),
-                temperatureHandler.getCurrentUnit(),
-                measurement.volume(),
-                measurement.unit().getSymbol(),
-                measurement.type().getValue(),
-                measurementHandler.getMeasurementDetailsJson(),
-                approximateVolSlider.getValue()
+                cropTypeCombo.getValue(),                    // cropType
+                temperatureHandler.getCurrentTemperature(),   // waterTemperature
+                temperatureHandler.getCurrentUnit(),          // temperatureUnit
+                measurement.volume(),                         // waterVolume
+                measurement.unit().getSymbol(),              // volumeUnit
+                measurement.type().getValue(),                // measurementMethod
+                measurementDetails,                           // measurementDetails como Map
+                approximateVolSlider.getValue(),              // irrigationLevel
+                latestSensorData.soilHumidity(),             // soilHumidity
+                latestSensorData.airTemperature(),           // airTemperature
+                latestSensorData.airHumidity()               // airHumidity
         );
     }
 
