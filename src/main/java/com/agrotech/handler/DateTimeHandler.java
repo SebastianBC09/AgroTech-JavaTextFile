@@ -7,6 +7,8 @@ import javafx.animation.Timeline;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
+import java.time.LocalDateTime;
+
 public class DateTimeHandler {
     private final DateTimeService dateTimeService;
     private final Label dateLabel;
@@ -41,8 +43,18 @@ public class DateTimeHandler {
         dateLabel.setText(dateTimeService.getFormattedCurrentDate());
     }
 
+    // Método original para usar hora actual
     public void updateLastUpdateTime() {
         lastUpdateLabel.setText(dateTimeService.formatTime());
+    }
+
+    // Nuevo método para timestamp específico
+    public void updateLastUpdateTime(LocalDateTime timestamp) {
+        if (timestamp != null) {
+            lastUpdateLabel.setText(dateTimeService.formatTime(timestamp));
+        } else {
+            updateLastUpdateTime(); // Usa la hora actual si el timestamp es null
+        }
     }
 
     public String getCurrentDateTime() {
