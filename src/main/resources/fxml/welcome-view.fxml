@@ -5,16 +5,30 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.geometry.Insets?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Text?>
 <VBox alignment="CENTER" spacing="20.0"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.agrotech.controller.WelcomeController"
-      stylesheets="@/css/welcome-styles.css">     <!-- Vinculación del CSS -->
+      stylesheets="@/css/welcome-styles.css">
 
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label text="Sistema de Gestión de Riego" styleClass="welcome-title"/>
+    <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@/images/agrotech_logo.svg"/>
+    </ImageView>
+
+    <Label text="AgroTech 2.0" styleClass="welcome-title"/>
+
+    <Label text="Innovación que riega el Futuro" styleClass="welcome-slogan"/>
+
+    <Text styleClass="welcome-description" wrappingWidth="600">
+        Sistema de monitoreo y gestión de riego que integra sensores
+        para optimizar el uso del agua en cultivos. Importe sus datos exporte en múltiples formatos para una gestión eficiente de sus recursos hídricos.
+    </Text>
 
     <VBox fx:id="dropZone" alignment="CENTER" spacing="10.0" styleClass="drop-zone">
         <padding>
