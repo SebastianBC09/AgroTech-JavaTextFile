@@ -33,12 +33,6 @@ public class DateTimeHandler {
         clockTimeline.play();
     }
 
-    public void stopClock() {
-        if (clockTimeline != null) {
-            clockTimeline.stop();
-        }
-    }
-
     private void updateDateTime() {
         dateLabel.setText(dateTimeService.getFormattedCurrentDate());
     }
@@ -54,5 +48,4 @@ public class DateTimeHandler {
             updateLastUpdateTime(); // Usa la hora actual si el timestamp es null
         }
     }
-
 }
