@@ -2,6 +2,7 @@ package com.agrotech.controller;
 
 import com.agrotech.handler.*;
 import com.agrotech.model.ExportData;
+import com.agrotech.model.MeasurementData;
 import com.agrotech.model.SensorDataEnriched;
 import com.agrotech.model.ValidationResult;
 import com.agrotech.service.DataTransformationService;
@@ -71,7 +72,7 @@ public class DashboardController {
     public void initializeWithData() {
         SensorDataEnriched latestData = DataTransformationService.getInstance().getLatestReading();
         if (latestData == null) {
-            showAlert("Error", "No hay datos disponibles para mostrar");
+            showAlert();
             return;
         }
         try {
@@ -84,7 +85,7 @@ public class DashboardController {
             System.out.println("Dashboard inicializado con datos del sensor");
         } catch (Exception e) {
             System.err.println("Error al inicializar dashboard con datos: " + e.getMessage());
-            showAlert("Error", "Error al cargar los datos: " + e.getMessage());
+            showAlert();
         }
     }
 
@@ -142,8 +143,7 @@ public class DashboardController {
         } catch (Exception e) {
             String errorMessage = "Error al inicializar handlers: " + e.getMessage();
             System.err.println(errorMessage);
-            e.printStackTrace();
-            showAlert("Error", errorMessage);
+            showAlert();
         }
     }
 
@@ -211,6 +211,24 @@ public class DashboardController {
             return null;
         }
         var measurement = measurementHandler.getCurrentMeasurement();
+        Map<String, Object> measurementDetails = getStringObjectMap(measurement);
+
+        return new ExportData(
+                cropTypeCombo.getValue(),                    // cropType
+                temperatureHandler.getCurrentTemperature(),   // waterTemperature
+                temperatureHandler.getCurrentUnit(),          // temperatureUnit
+                measurement.volume(),                         // waterVolume
+                measurement.unit().getSymbol(),              // volumeUnit
+                measurement.type().getValue(),                // measurementMethod
+                measurementDetails,                           // measurementDetails como Map
+                approximateVolSlider.getValue(),              // irrigationLevel
+                latestSensorData.soilHumidity(),             // soilHumidity
+                latestSensorData.airTemperature(),           // airTemperature
+                latestSensorData.airHumidity()               // airHumidity
+        );
+    }
+
+    private Map<String, Object> getStringObjectMap(MeasurementData measurement) {
         Map<String, Object> measurementDetails = new HashMap<>();
         switch (measurement.type()) {
             case CONTAINER -> {
@@ -231,20 +249,7 @@ public class DashboardController {
                 measurementDetails.put("depth", furrowDepthCombo.getValue());
             }
         }
-
-        return new ExportData(
-                cropTypeCombo.getValue(),                    // cropType
-                temperatureHandler.getCurrentTemperature(),   // waterTemperature
-                temperatureHandler.getCurrentUnit(),          // temperatureUnit
-                measurement.volume(),                         // waterVolume
-                measurement.unit().getSymbol(),              // volumeUnit
-                measurement.type().getValue(),                // measurementMethod
-                measurementDetails,                           // measurementDetails como Map
-                approximateVolSlider.getValue(),              // irrigationLevel
-                latestSensorData.soilHumidity(),             // soilHumidity
-                latestSensorData.airTemperature(),           // airTemperature
-                latestSensorData.airHumidity()               // airHumidity
-        );
+        return measurementDetails;
     }
 
     private void updateSystemStatus() {
@@ -266,11 +271,11 @@ public class DashboardController {
         }
     }
 
-    private void showAlert(String title, String content) {
+    private void showAlert() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
-        alert.setContentText(content);
+        alert.setContentText("No hay datos disponibles para mostrar");
         alert.showAndWait();
     }
 
@@ -293,10 +298,9 @@ public class DashboardController {
         ValidationResult result = validationHandler.validateExportData(cropTypeCombo.getValue());
 
         if (!result.isValid()) {
-            showAlert("Error", result.getMessage());
+            showAlert();
             return false;
         }
-
         return true;
     }
 }
