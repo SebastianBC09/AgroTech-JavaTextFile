@@ -25,14 +25,6 @@ public class ContainerVolumeCalculator implements VolumeCalculator {
     }
 
     @Override
-    public String getDetailsJson() {
-        return String.format(
-                "{\"container_type\":\"%s\",\"container_count\":%d}",
-                containerType, count
-        );
-    }
-
-    @Override
     public boolean isValid() {
         return containerType != null &&
                 containerVolumes.containsKey(containerType) &&
