@@ -28,17 +28,40 @@ AgroTech 2.0 es una evolución significativa de nuestro sistema original, diseñ
 - Panel de control personalizable
 
 ### Gestión de Datos
-- Importación de datos desde CSV
-- Procesamiento automático de lecturas
-- Histórico de registros
-- Análisis de tendencias
+- Importación de datos desde CSV con formato específico:
+   - timestamp
+   - soil_humidity
+   - air_temperature
+   - air_humidity
+   - irrigation_status
 
-### Exportación Flexible
-- Formato SQL para bases de datos relacionales
-- Formato NoSQL para bases de datos documentales
-- Exportación a JSON para interoperabilidad
-- Generación de reportes personalizados
+### Tipos de Mediciones
+- Por Contenedores (Baldes, Tanques, Bidones)
+- Por Bomba (diferentes capacidades)
+- Por Manguera (diferentes diámetros)
+- Por Surco (dimensiones personalizables)
+- Manual
 
+### Formatos de Exportación
+- SQL: Genera scripts para bases de datos relacionales
+- NoSQL: Genera documentos para MongoDB
+- JSON: Formato de intercambio de datos universal
+
+### Estructura del Proyecto
+```
+src/
+        |---main
+|   |---java
+|       |---com.agrotech
+|           |---config/      // Configuraciones del sistema
+        |           |---controller/  // Controladores JavaFX
+        |           |---exception/   // Excepciones personalizadas
+        |           |---handler/     // Manejadores de eventos
+        |           |---model/       // Modelos de datos
+        |           |---service/     // Servicios de negocio
+        |   |---resources           // Recursos de la aplicación
+|---test                    // Pruebas unitarias
+```
 ## 🛠️ Tecnologías
 
 - Java 21
@@ -67,7 +90,7 @@ AgroTech 2.0 es una evolución significativa de nuestro sistema original, diseñ
 
 1. **Clonar el Repositorio**
 ```bash
-git clone https://github.com/tu-usuario/agrotech-2.0.git
+git clone git@github.com:SebastianBC09/AgroTech2.0-App.git
 cd agrotech-2.0
 ```
 
@@ -149,12 +172,6 @@ Este proyecto está bajo la Licencia MIT.
 - Comunidad Arduino por sus librerías y soporte
 - Contribuidores de JavaFX por el framework
 - Todos los agricultores que probaron y proporcionaron feedback
-
-## 📞 Contacto
-
-- Email: tu@email.com
-- Twitter: [@tu_usuario](https://twitter.com/tu_usuario)
-- Sitio Web: [tu-sitio.com](https://tu-sitio.com)
 
 ## 🚧 Estado del Proyecto
 
