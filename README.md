@@ -41,7 +41,7 @@ AgroTech 2.0 es una evolución significativa de nuestro sistema original, diseñ
 
 ## 🛠️ Tecnologías
 
-- Java 17
+- Java 21
 - JavaFX
 - Arduino (Hardware y Sensores)
 - Maven
@@ -52,7 +52,7 @@ AgroTech 2.0 es una evolución significativa de nuestro sistema original, diseñ
 ## 📋 Requisitos Previos
 
 ### Software
-- JDK 17 o superior
+- JDK 21
 - Maven 3.8+
 - Arduino IDE 2.0+
 - IntelliJ IDEA (recomendado)
@@ -110,10 +110,11 @@ mvn javafx:run
 
 ## 📖 Documentación
 
-- [Guía de Usuario](docs/user-guide/)
-- [Documentación Técnica](docs/technical/)
-- [Configuración de Hardware](docs/hardware/)
-- [Preguntas Frecuentes](docs/FAQ.md)
+La documentación detallada del proyecto está en desarrollo. Próximamente incluirá:
+- Guía de Usuario
+- Documentación Técnica
+- Configuración de Hardware
+- Preguntas Frecuentes
 
 ## 🤝 Contribuir
 
@@ -131,11 +132,14 @@ mvn javafx:run
 
 ## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la Licencia MIT.
 
 ## ✍️ Autores
 
-- **[Tu Nombre]** - *Trabajo Inicial* - [GitHub](https://github.com/tu-usuario)
+### Equipo Principal
+- **Juan Sebastian Ballen Castañeda** - [GitHub](https://github.com/SebastianBC09)
+- **Jean Francois Nizo Segura** - [GitHub](https://github.com/)
+- **William Stiven Álvarez Molano** - [GitHub](https://github.com/)
 
 ### Contribuidores
 - Ver lista de [contribuidores](https://github.com/tu-usuario/agrotech-2.0/contributors)
