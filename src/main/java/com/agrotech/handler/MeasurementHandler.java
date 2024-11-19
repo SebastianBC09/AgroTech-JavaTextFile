@@ -324,25 +324,6 @@ public class MeasurementHandler {
         }
     }
 
-    public void reset() {
-        volInput.clear();
-        volUnitCombo.setValue("L");
-        disableAllControls();
-        clearAllInputs();
-    }
-
-    private void clearAllInputs() {
-        containerTypeCombo.setValue(null);
-        containerCountSpinner.getValueFactory().setValue(1);
-        pumpTypeCombo.setValue(null);
-        pumpTimeInput.clear();
-        hoseTypeCombo.setValue(null);
-        hoseTimeInput.clear();
-        furrowLengthInput.clear();
-        furrowWidthInput.clear();
-        furrowDepthCombo.setValue(null);
-    }
-
     public void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error de Medición");
@@ -439,7 +420,7 @@ public class MeasurementHandler {
 
             if (calculator.isValid()) {
                 double volume = calculator.calculateVolume();
-                updateVolumeDisplay(volume, VolumeUnit.LITER);
+                updateVolumeDisplay(volume);
 
                 if (onVolumeUpdated != null) {
                     MeasurementData data = new MeasurementData(
@@ -457,9 +438,9 @@ public class MeasurementHandler {
         }
     }
 
-    private void updateVolumeDisplay(double volume, VolumeUnit unit) {
+    private void updateVolumeDisplay(double volume) {
         volInput.setText(String.format("%.2f", volume));
-        volUnitCombo.setValue(unit.getSymbol());
+        volUnitCombo.setValue(VolumeUnit.LITER.getSymbol());
     }
 
     private void convertVolume(VolumeUnit fromUnit, VolumeUnit toUnit) {
