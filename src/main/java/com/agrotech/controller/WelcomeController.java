@@ -19,7 +19,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
-
 public class WelcomeController {
     @FXML private VBox dropZone;
     @FXML private Label statusLabel;
@@ -53,7 +52,7 @@ public class WelcomeController {
             boolean success = false;
 
             if (db.hasFiles() && !db.getFiles().isEmpty()) {
-                handleFileSelection(db.getFiles().get(0));
+                handleFileSelection(db.getFiles().getFirst());
                 success = true;
             }
 
@@ -67,18 +66,6 @@ public class WelcomeController {
         });
     }
 
-    private void handleBrowseAction() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar Archivo CSV");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Archivos CSV", "*.csv")
-        );
-
-        File selectedFile = fileChooser.showOpenDialog(dropZone.getScene().getWindow());
-        if (selectedFile != null) {
-            handleFileSelection(selectedFile);
-        }
-    }
 
     private void handleFileSelection(File file) {
         try {
