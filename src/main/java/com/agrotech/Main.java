@@ -34,7 +34,7 @@ public class Main extends Application {
         stage.setMinHeight(MIN_HEIGHT);
         try {
             stage.getIcons().add(new Image(
-                    Objects.requireNonNull(getClass().getResourceAsStream("/images/app-icon.png"))
+                    Objects.requireNonNull(getClass().getResourceAsStream("/images/agrotech-icon.svg"))
             ));
         } catch (Exception e) {
             System.err.println("No se pudo cargar el ícono de la aplicación: " + e.getMessage());
