@@ -20,27 +20,18 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         try {
-            // Configurar la ventana principal
             setupMainWindow(stage);
-
-            // Cargar y mostrar la vista inicial
             showInitialView(stage);
-
-            // Configurar comportamiento al cerrar
             setupCloseHandler(stage);
-
         } catch (Exception e) {
-            showErrorAndExit("Error al iniciar la aplicación", e);
+            showErrorAndExit(e);
         }
     }
 
     private void setupMainWindow(Stage stage) {
-        // Configurar título y dimensiones mínimas
         stage.setTitle(APP_TITLE);
         stage.setMinWidth(MIN_WIDTH);
         stage.setMinHeight(MIN_HEIGHT);
-
-        // Intentar cargar el ícono de la aplicación
         try {
             stage.getIcons().add(new Image(
                     Objects.requireNonNull(getClass().getResourceAsStream("/images/app-icon.png"))
@@ -53,19 +44,15 @@ public class Main extends Application {
     private void showInitialView(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/welcome-view.fxml"));
         Parent root = loader.load();
-
-        // Aplicar estilos CSS si existen
         Scene scene = new Scene(root);
         String css = Objects.requireNonNull(getClass().getResource("/css/main.css")).toExternalForm();
         scene.getStylesheets().add(css);
-
         stage.setScene(scene);
         stage.show();
     }
 
     private void setupCloseHandler(Stage stage) {
         stage.setOnCloseRequest(event -> {
-            // Limpiar recursos y realizar tareas de cierre
             cleanup();
             Platform.exit();
         });
@@ -73,38 +60,29 @@ public class Main extends Application {
 
     private void cleanup() {
         try {
-            // Aquí puedes agregar lógica de limpieza
-            // Por ejemplo, cerrar conexiones, guardar estado, etc.
             System.out.println("Realizando limpieza antes de cerrar...");
         } catch (Exception e) {
             System.err.println("Error durante la limpieza: " + e.getMessage());
         }
     }
 
-    private void showErrorAndExit(String header, Exception e) {
+    private void showErrorAndExit(Exception e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error Fatal");
-        alert.setHeaderText(header);
+        alert.setHeaderText("Error al iniciar la aplicación");
         alert.setContentText("Detalles: " + e.getMessage());
-
-        // Imprimir stack trace para debugging
-        e.printStackTrace();
-
+        System.err.println("Error fatal al iniciar la aplicación: " + e.getMessage());
         alert.showAndWait();
         Platform.exit();
     }
 
     @Override
     public void stop() {
-        // Este método se llama automáticamente al cerrar la aplicación
         System.out.println("Aplicación finalizada");
     }
 
     public static void main(String[] args) {
-        // Configurar propiedades del sistema si es necesario
         System.setProperty("javafx.preloader", "com.agrotech.preloader.AppPreloader");
-
-        // Iniciar la aplicación
         launch(args);
     }
 }
